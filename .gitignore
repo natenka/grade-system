@@ -1,8 +1,11 @@
-
-#
+# Credentials files  #
+######################
 gmail_creds.py
+client_secrets.json
+drive.dat
+mycreds.txt
 
-# Vim undo files #
+# Vim undo files     #
 ######################
 *.un~
 *.pyc
