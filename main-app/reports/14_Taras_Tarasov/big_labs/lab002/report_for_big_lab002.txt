@@ -1,0 +1,174 @@
+==========r1.txt==========
+
+-ip ssh port 3009 rotary 9
++ip ssh port 3009 rotary 1
+
+ line vty 3
+  login local
+- rotary 9
++ rotary 1
+  autocommand  ssh -l ccie -p 9009 180.1.7.7
+  transport input ssh
+  transport output ssh
+==========r2.txt==========
+
+-ip dhcp relay information trust-all
+
+-ip route 180.1.0.0 255.255.0.0 188.1.235.3
+==========r3.txt==========
+
+-ip dhcp relay information trust-all
+
+-ip route 180.1.0.0 255.255.252.0 188.1.235.2
++ip route 180.1.1.1 255.255.255.255 188.1.235.2
++ip route 180.1.5.5 255.255.255.255 188.1.235.5
+==========r4.txt==========
+
++ip route 180.1.5.5 255.255.255.255 188.1.34.3
+==========r5.txt==========
+No differences. Good job!
+==========r6.txt==========
+
+-no logging on
++no logging buffered
++no logging console
++no logging monitor
++no logging trap
+==========r7.txt==========
+
+-ip dhcp excluded-address 188.1.235.6 188.1.235.255
++ip dhcp excluded-address 188.1.235.6 188.1.235.254
+
+-ip ssh port 9009 rotary 9
++ip ssh port 9009 rotary 7
+
+ interface Tunnel72
+  ip address 188.1.100.9 255.255.255.252
++ qos pre-classify
+  tunnel source Ethernet0/1.144
+  tunnel destination 144.1.0.2
+  service-policy output TUN_OUT72
+
+ interface Tunnel73
+  ip address 188.1.100.5 255.255.255.252
++ qos pre-classify
+  tunnel source Ethernet0/1.144
+  tunnel destination 144.1.0.3
+  service-policy output TUN_OUT73
+
+ interface Tunnel74
+  ip address 188.1.100.1 255.255.255.252
++ qos pre-classify
+  tunnel source Ethernet0/1.144
+  tunnel destination 144.1.0.4
+  service-policy output TUN_OUT74
+
+-ip route 180.1.0.0 255.255.248.0 188.1.100.10
++ip route 180.1.1.1 255.255.255.255 188.1.100.2
++ip route 180.1.5.5 255.255.255.255 188.1.100.2
+
+ ip access-list extended C-3PO
+- permit udp any any eq rip
+- permit udp any eq rip any
++ permit udp any any
+
+ line vty 3
+  login local
+- rotary 9
++ rotary 7
+  transport input ssh
+
+==========r8.txt==========
+No differences. Good job!
+==========r9.txt==========
+No differences. Good job!
+==========r10.txt==========
+No differences. Good job!
+==========sw1.txt==========
+
+-ip dhcp snooping information option allow-untrusted
++no ip dhcp snooping information option
+
+ interface Ethernet0/0
+  switchport trunk allowed vlan 1-10,12,23,34,67,78,89,109
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+- spanning-tree portfast edge trunk
++ spanning-tree portfast edge
+
+ interface Ethernet0/1
+  switchport trunk allowed vlan 1-10,12,34,67,78,89,144,235
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+- spanning-tree portfast edge trunk
++ spanning-tree portfast edge
+  ip dhcp snooping trust
+
+ interface Ethernet0/2
+  switchport trunk allowed vlan 1-10,12,23,34,67,78,456
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+- spanning-tree portfast edge trunk
++ spanning-tree portfast edge
+
+ interface Ethernet0/3
+  switchport trunk allowed vlan 1-10,12,23,34,78,89,109,201-203,211-213
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+- spanning-tree portfast edge trunk
++ spanning-tree portfast edge
+
+ interface Ethernet1/0
+  switchport trunk allowed vlan 1-10,12,23,34,67,78,89,109,144,201-203,211-213
+  switchport trunk allowed vlan add 235,456
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+- spanning-tree portfast edge trunk
++ spanning-tree portfast edge
+==========sw2.txt==========
+
++no ip dhcp snooping information option
+
+ interface Ethernet0/0
+  switchport trunk allowed vlan 1-10,12,23,34,144,235,456
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+- spanning-tree portfast edge trunk
++ spanning-tree portfast edge
+
+ interface Ethernet0/1
+  switchport trunk allowed vlan 1-10,12,23,34,67,78,89,109
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+- spanning-tree portfast edge trunk
++ spanning-tree portfast edge
+
+==========sw3.txt==========
+
+-ip dhcp snooping information option allow-untrusted
++no ip dhcp snooping information option
+
+-spanning-tree vlan 2,4,6,8,10,12,34,78,144,456 priority 4096
++spanning-tree vlan 2,4,6,8,10,12,34,78,144,456 priority 28672
+
+ interface Ethernet0/0
+  switchport trunk allowed vlan 1-10,12,23,34,89,144,235
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+- spanning-tree portfast edge trunk
++ spanning-tree portfast edge
+  ip dhcp snooping trust
+==========sw4.txt==========
+
+ interface Ethernet0/0
+  switchport trunk allowed vlan 1-10,12,23,34,67,109,144,235,456
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+- spanning-tree portfast edge trunk
++ spanning-tree portfast edge
+
+ interface Ethernet0/1
+  switchport trunk allowed vlan 1-10,12,67,78,109,144
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+- spanning-tree portfast edge trunk

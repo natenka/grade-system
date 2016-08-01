@@ -1,0 +1,10 @@
+==========r1.txt==========
+No differences. Good job!
+==========r2.txt==========
+No differences. Good job!
+==========r9.txt==========
+No differences. Good job!
+==========r10.txt==========
+No differences. Good job!
+==========sw1.txt==========
+No differences. Good job!

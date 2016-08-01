@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block page_content %}
+    <h2>Рейтинг участников проекта "CCIE за год"</h2>
+    <br>
+    <br>
+    <h3>Лучшие участники по сумме баллов за лаборы</h3>
+        <table class="table table-hover">
+            <tr>
+                <th>Место</th>
+                <th>ID</th>
+                <th>Участник</th>
+                <th>Сделано лаборов</th>
+                <th>Сумма баллов</th>
+            </tr>
+            {% for st in results %}
+            <tr>
+                <td>{{st['place']}}</td>
+                <td>{{st['st_id']}}</td>
+                <td>{{st['student']}}</td>
+                <td>{{st['total_labs']}}</td>
+                <td>{{st['total_marks']}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+{% endblock %}

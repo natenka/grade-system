@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block page_content %}
+    <h2><a href="{{ url_for('main.stats') }}">Статистика по проекту "CCIE за год"</a></h2>
+    <br>
+    <br>
+    <h3>Статистика по лаборам</h3>
+        <table class="table table-hover">
+            <tr>
+                <th>ID лабора</th>
+                <th>Тема лабора</th>
+                <th>Сколько студентов сделало</th>
+                <th>Средний балл студентов</th>
+            </tr>
+            {% for lab in lab_stats %}
+            <tr>
+                <td>{{lab['lab_id']}}</td>
+                <td>{{lab['lab_desc']}}</td>
+                <td>{{lab['st_count']}}</td>
+                <td>{{lab['avg_mark']}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <br>
+        <br>
+    </table>
+
+{% endblock %}

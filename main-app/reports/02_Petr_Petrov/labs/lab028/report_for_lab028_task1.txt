@@ -1,0 +1,85 @@
+==========r1.txt==========
+No differences. Good job!
+==========r2.txt==========
+
+ policy-map IncomingPolicy
+  class HTTP_R1
+-  police cir 384000 bc 38400 be 19200 conform-action transmit  exceed-action transmit  violate-action drop
++  police 384000 38400 19200 conform-action transmit  exceed-action transmit  violate-action drop
+  class HTTP_ANY
+-  police cir 96000 bc 2400 be 3600 conform-action transmit  exceed-action transmit  violate-action drop
++  police 96000 2400 3600 conform-action transmit  exceed-action transmit  violate-action drop
+  class FTP
+-  police cir 256000 bc 6400 be 9600 conform-action transmit  exceed-action transmit  violate-action drop
++  police 256000 6400 9600 conform-action transmit  exceed-action transmit  violate-action drop
+  class SSH
+-  police cir 128000 bc 3200 be 4800 conform-action transmit  exceed-action transmit  violate-action drop
++  police 128000 3200 4800 conform-action transmit  exceed-action transmit  violate-action drop
+
+ interface Serial1/0
+  no ip address
++ shutdown
+  serial restart-delay 0
+
+ ip access-list extended FTP
+  permit tcp any any eq ftp
+- permit tcp any any eq ftp-data
+==========r3.txt==========
+No differences. Good job!
+==========r4.txt==========
+No differences. Good job!
+==========r5.txt==========
+No differences. Good job!
+==========r6.txt==========
+
+-class-map match-any R10
+
++class-map match-all R10
+  match access-group name R10
+
+ policy-map Branch1
+  class R10
+-  police cir 384000 bc 48000 be 24000 conform-action transmit  exceed-action set-dscp-transmit default violate-action drop
++  police 384000 48000 24000 conform-action transmit  exceed-action set-dscp-transmit default violate-action drop
+  class class-default
+-  police cir 512000 bc 64000 be 32000 conform-action transmit  exceed-action set-dscp-transmit default violate-action drop
++  police 512000 64000 32000 conform-action transmit  exceed-action set-dscp-transmit default violate-action drop
+
+ ip access-list extended R10
+- permit ip host 180.1.10.10 any
+  permit ip 188.1.10.0 0.0.0.255 any
+  permit ip 188.1.109.0 0.0.0.255 any
++ permit ip host 180.1.10.10 any
+==========r7.txt==========
+No differences. Good job!
+==========r8.txt==========
+No differences. Good job!
+==========r9.txt==========
+
+ policy-map CustomerR10
+  class HTTP
+-  police cir 192000 bc 24000 be 12000 conform-action transmit  exceed-action set-dscp-transmit af11 violate-action drop
++  police 192000 24000 12000 conform-action transmit  exceed-action set-dscp-transmit af11 violate-action drop
+  class SSH
+-  police cir 64000 bc 8000 be 4000 conform-action transmit  exceed-action set-dscp-transmit af11 violate-action drop
++  police 64000 8000 4000 conform-action transmit  exceed-action set-dscp-transmit af11 violate-action drop
+  class FTP
+-  police cir 128000 bc 16000 be 8000 conform-action transmit  exceed-action set-dscp-transmit af11 violate-action drop
++  police 128000 16000 8000 conform-action transmit  exceed-action set-dscp-transmit af11 violate-action drop
+  class class-default
+-  police cir 128000 bc 16000 be 8000 conform-action transmit  exceed-action set-dscp-transmit af11 violate-action drop
++  police 128000 16000 8000 conform-action transmit  exceed-action set-dscp-transmit af11 violate-action drop
+
+ ip access-list extended FTP
+  permit tcp any any eq ftp
+- permit tcp any any eq ftp-data
+==========r10.txt==========
+No differences. Good job!
+==========sw1.txt==========
+No differences. Good job!
+==========sw2.txt==========
+No differences. Good job!
+==========sw3.txt==========
+No differences. Good job!
+==========sw4.txt==========
+No differences. Good job!

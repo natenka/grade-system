@@ -1,0 +1,30 @@
+==========r1.txt==========
+
+-snmp-server group CCIEinaYEAR v3 auth read ALLINT write ALLINT
++snmp-server group CCIEinaYEAR v3 priv write ALLINT
+
+==========r2.txt==========
+
+-snmp-server group CCIEinaYEAR v3 auth read ALLINT write ALLINT
++snmp-server group CCIEinaYEAR v3 priv write ALLINT
+
+==========r3.txt==========
+
+-snmp-server group CCIEinaYEAR v3 auth read ALLINT write ALLINT
++snmp-server group CCIEinaYEAR v3 priv write ALLINT
+
+==========r4.txt==========
+
+-snmp-server group CCIEinaYEAR v3 auth read ALLINT write ALLINT
++snmp-server group CCIEinaYEAR v3 priv write ALLINT
+
+==========r5.txt==========
+
+-snmp-server group CCIEinaYEAR v3 auth read ALLINT write ALLINT
++snmp-server group CCIEinaYEAR v3 priv write ALLINT
+
+==========r6.txt==========
+
+-snmp-server group CCIEinaYEAR v3 auth read ALLINT write ALLINT
++snmp-server group CCIEinaYEAR v3 priv write ALLINT
+

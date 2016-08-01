@@ -1,0 +1,17 @@
+==========r1.txt==========
+No differences. Good job!
+==========r5.txt==========
+
+ interface Ethernet0/1
+- ip address 20.20.20.1 255.255.255.0
++ ip address 10.10.10.5 255.255.255.0
+==========sw1.txt==========
+No differences. Good job!
+==========sw2.txt==========
+
+ interface Ethernet0/0
+  switchport access vlan 10
+  switchport mode access
+- switchport voice vlan dot1p
++ switchport voice vlan 10
+  spanning-tree link-type point-to-point

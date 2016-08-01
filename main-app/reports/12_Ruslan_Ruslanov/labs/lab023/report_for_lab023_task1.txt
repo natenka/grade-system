@@ -1,0 +1,17 @@
+==========r1.txt==========
+
+-logging rate-limit all 10
++logging rate-limit 10
+
+ archive
+  log config
+   logging enable
+   logging size 50
++  notify syslog contenttype plaintext
+==========r2.txt==========
+
+ archive
+  log config
+   logging enable
+   logging size 50
++  notify syslog contenttype plaintext

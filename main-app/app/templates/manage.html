@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block page_content %}
+    <h2>Инструменты для управления системой проверки лаборов</h2>
+    <br>
+    <br>
+    <br>
+    <h4>Синхронизация каталогов Google Drive:</h4>
+    <br>
+    <h5>Синхронизация initial/answer configs (Last sync: МСК {{configs_upd_time}}):</h5>
+    <div class="row">
+        <div class="col-md-3">
+            {{ wtf.quick_form(sync_gdrive) }}
+        </div>
+    </div>
+    <br>
+    <br>
+    <h5>Синхронизация students configs (Last sync: МСК {{students_upd_time}}):</h5>
+    <div class="row">
+        <div class="col-md-3">
+            {{ wtf.quick_form(sync_stu_gdrive) }}
+        </div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <h4>Отправить письма по проверенным лабам:</h4>
+    <div class="row">
+        <div class="col-md-3">
+            {{ wtf.quick_form(send_lab) }}
+        </div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <h4>Отправка письма всем участникам</h4>
+    <div class="row">
+        <div class="col-md-3">
+            {{ wtf.quick_form(mail_to_all) }}
+        </div>
+    </div>
+    <br>
+    <br>
+    <br>
+
+
+{% endblock %}

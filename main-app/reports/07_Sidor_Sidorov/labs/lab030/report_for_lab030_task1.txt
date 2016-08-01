@@ -1,0 +1,32 @@
+==========r1.txt==========
+No differences. Good job!
+==========r2.txt==========
+
+-enable secret 5 $1$dwup$qdEzNq27yaSHwOlxWMU3a.
+
++enable secret 5 $1$wlG9$lsLVhStsyscD0AQRM/lP4.
+
+-aaa local authentication attempts max-fail 3
+
+-aaa authentication fail-message ^CAuthentication Failed , try again#
+
++aaa authentication fail-message 
+
++Authentication Failed , try again
++
+
+-aaa authentication login CONSOLE local
+
+-aaa authentication login TELNET local enable
+
++aaa authentication login CONSOLE local-case
+
++aaa authentication login TELNET enable
+
+-username CCIEConsole privilege 15 secret 5 $1$kR.C$d7H3Dip5jYRKGthEAPein/
+
++username CCIEConsole privilege 15 secret 5 $1$fisb$1g20DPN5qHf4/e4sxfpKB1
+
+ interface Ethernet0/1
+  no ip address
+- shutdown

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block page_content %}
+    <h3>Отчеты по лабораторной {{lab}} участника {{student}}</h3>
+    <br>
+    <br>
+    {% for task in diff %}
+    <div class="spoiler-wrapper">
+        <div class="spoiler folded">
+            <a href="javascript:void(0);">Show Diff report for {{task}}</a>
+        </div>
+        <pre class="spoiler-text">{{diff[task]}}</pre>
+    </div>
+    <a href="/edit_report/{{lab}}_{{st_id}}_{{task}}">Edit report for {{task}}</a>
+    <br>
+    <br>
+    {% endfor %}        
+    <br>
+    <br>
+    <div class="row">
+        <div class="col-md-3">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
+    <br>
+    <br>
+    <p>Система оценок такая:</p>
+    <ul>
+        <li><b>6</b> -- лабораторная без отличий с ответом</li>
+        <li><b>5</b> -- мелкие один-два нюанса/недочета</li>
+        <li><b>4</b> -- 3-4 недочета/отличия</li>
+        <li><b>3</b> -- меньше половины лабораторной неправильно</li>
+        <li><b>1</b> -- больше половины лабораторной неправильно/участник не выполнил требования</li>
+        <li><b>0</b> -- лабораторная не сдана</li>
+    </ul>
+
+    <br>
+    <b>Лабораторная сдана:</b> баллы 3-6
+    <br>
+    <b>Лабораторная не сдана:</b> баллы 0-1
+    <br>
+    <br>
+    <br>
+    <br>
+    <b>Комментарии из проверенных лаборов</b> 
+    {% for comment in comments %}
+    <pre>{{comment}}</pre>
+    <br>
+    {% endfor %}
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+    <script>
+    jQuery(document).ready(function(){
+        jQuery('.spoiler-text').hide()
+        jQuery('.spoiler').click(function(){
+            jQuery(this).toggleClass("folded").toggleClass("unfolded").next().slideToggle()
+        })
+    })
+    </script>
+{% endblock %}

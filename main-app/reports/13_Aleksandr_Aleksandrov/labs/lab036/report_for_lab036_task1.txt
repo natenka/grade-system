@@ -1,0 +1,32 @@
+==========r1.txt==========
+
+ parser view L1
+- secret 5 $1$iATy$LhWa3XpparbSYxEdfQKEj1
++ secret 5 $1$bzC1$KeFNX5zprVuWQ7f2Qtz1m1
+  commands interface include shutdown
+  commands configure include interface
+  commands exec include configure terminal
+  commands exec include configure
+  commands exec include show ip interface brief
+  commands exec include show ip interface
+  commands exec include show ip
+- commands exec exclude show running-config
+  commands exec include show
+  commands configure include interface Ethernet0/1
+  commands configure include interface Serial1/0
+
+==========r2.txt==========
+
+ parser view L1
++ secret 5 $1$bzC1$KeFNX5zprVuWQ7f2Qtz1m1
+  commands interface include shutdown
+  commands configure include interface
+  commands exec include configure terminal
+  commands exec include configure
+  commands exec include show ip interface brief
+  commands exec include show ip interface
+  commands exec include show ip
+- commands exec exclude show running-config
+  commands exec include show
+  commands configure include interface Ethernet0/1
+  commands configure include interface Serial1/0

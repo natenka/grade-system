@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block page_content %}
+    {% if not current_user.is_authenticated %}
+        <h2>Привет, уважаемый эксперт!</h2>
+        <br>
+        <br>
+    <p>Ты не залогинился.</p>
+    <p>Для того чтобы приступить к проверке лабораторных, тебе надо залогиниться.</p>
+    {% else %}
+        <h2>Привет, {{current_user}}</h2>
+        <br>
+        <br>
+        <p>Теперь можешь приступать к <a href="{{ url_for('main.labs') }}">проверке лаборов</a> :)</p>
+    {% endif %}
+{% endblock %}

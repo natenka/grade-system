@@ -1,0 +1,24 @@
+==========r9.txt==========
+
+ interface Serial1/0
+  ip address 10.9.8.7 255.255.255.0
+  encapsulation ppp
+  ppp authentication chap
+- ppp chap hostname Server
+  serial restart-delay 0
+
++username Server password 0 CCIEinaYEAR?
+
+-username R10 password 0 CCIEinaYEAR?
+==========r10.txt==========
+
+ interface Serial1/0
+  ip address 188.1.91.2 255.255.255.0
+  encapsulation ppp
++ ppp chap hostname Server
+  ppp chap password 0 CCIEinaYEAR?
+  serial restart-delay 0
+==========r1.txt==========
+No differences. Good job!
+==========r2.txt==========
+No differences. Good job!

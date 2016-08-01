@@ -1,0 +1,16 @@
+==========sw1.txt==========
+No differences. Good job!
+==========sw2.txt==========
+No differences. Good job!
+==========r4.txt==========
+No differences. Good job!
+==========r5.txt==========
+No differences. Good job!
+==========r3.txt==========
+No differences. Good job!
+==========sw3.txt==========
+No differences. Good job!
+==========sw4.txt==========
+No differences. Good job!
+==========r2.txt==========
+No differences. Good job!

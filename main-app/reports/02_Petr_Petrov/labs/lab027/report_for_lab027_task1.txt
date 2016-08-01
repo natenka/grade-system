@@ -1,0 +1,85 @@
+==========r1.txt==========
+No differences. Good job!
+==========r2.txt==========
+
+ router rip
+  version 2
+- offset-list R2R3 in 15 Ethernet0/1.235
++ offset-list 1 out 16 Serial1/0
++ offset-list 2 in 7 Ethernet0/1.235
+  network 180.1.0.0
+  network 188.1.0.0
++ default-information originate
+  no auto-summary
+
+-ip access-list standard R2R3
+- permit 180.1.3.3
+- permit 180.1.34.0 0.0.0.255
+
++access-list 1 permit 180.0.0.0 0.255.255.255
+
++access-list 1 permit 188.0.0.0 0.255.255.255
+
++access-list 1 deny   any
+
++access-list 2 permit 180.1.3.3
+
++access-list 2 permit 188.1.34.0 0.0.0.255
+==========r3.txt==========
+No differences. Good job!
+==========r4.txt==========
+No differences. Good job!
+==========r5.txt==========
+No differences. Good job!
+==========r6.txt==========
+
+ router rip
+  version 2
+- redistribute static
+- offset-list R6R3 out 13 Ethernet0/1.456
++ redistribute static metric 1
++ offset-list 1 out 13 Ethernet0/1.456
+  network 180.1.0.0
+  network 188.1.0.0
+- distribute-list prefix FILTER out
++ distribute-list prefix DENY-R2 out
+  no auto-summary
+
+-ip route 10.10.10.0 255.255.255.0 Null0 188.1.67.7
+
+-ip access-list standard R6R3
+- permit 10.10.10.0 0.0.0.255
+
+-ip prefix-list FILTER seq 5 deny 180.1.2.2/32
+
+-ip prefix-list FILTER seq 10 permit 0.0.0.0/0 le 32
+
++ip route 10.10.10.0 255.255.255.0 Null0
+
++ip prefix-list DENY-R2 seq 5 deny 180.1.2.2/32
+
++ip prefix-list DENY-R2 seq 10 permit 0.0.0.0/0 le 32
+
++access-list 1 permit 10.10.10.0 0.0.0.255
+==========r7.txt==========
+No differences. Good job!
+==========r8.txt==========
+
+ interface Ethernet0/1.78
+  encapsulation dot1Q 78
+  ip address 188.1.78.8 255.255.255.0
++ ip summary-address rip 188.1.0.0 255.255.128.0
+  ip summary-address rip 180.1.8.0 255.255.252.0
+- ip summary-address rip 188.1.0.0 255.255.0.0
+==========r9.txt==========
+No differences. Good job!
+==========r10.txt==========
+No differences. Good job!
+==========sw1.txt==========
+No differences. Good job!
+==========sw2.txt==========
+No differences. Good job!
+==========sw3.txt==========
+No differences. Good job!
+==========sw4.txt==========
+No differences. Good job!
