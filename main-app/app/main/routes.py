@@ -15,6 +15,9 @@ from ..scripts.check_labs import report_path, set_lab_status, save_comment_in_db
 from ..scripts.check_configs import get_all_for_loaded_configs, return_cfg_files
 from ..scripts.global_info import STUDENT_ID_FOLDER
 from ..scripts.gdrive.sync_gdrive import sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time
+#from ..settings import DB
+
+
 import os
 import subprocess
 from operator import itemgetter
@@ -28,8 +31,8 @@ def index():
 @main.route('/labs', methods=['GET', 'POST'])
 @login_required
 def labs():
-    subprocess.call(['python', 'app/scripts/check_labs.py'])
-    subprocess.call(['python', 'app/scripts/check_big_labs.py'])
+    #subprocess.call(['python', 'app/scripts/check_labs.py'])
+    #subprocess.call(['python', 'app/scripts/check_big_labs.py'])
     labs = get_labs_web(DB)
     print current_user
     return render_template('labs.html', lab_count = len(labs), labs=labs)

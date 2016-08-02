@@ -1,32 +1,14 @@
-from setup import DB, get_labs_web, get_student_name, get_task_number
+from setup import get_labs_web, get_student_name, get_task_number
 from diff_report import generateLabReport
-from global_info import CHECK_LABS, STUDENT_ID_FOLDER
+from global_info import STUDENT_ID_FOLDER
+from ..settings import DB, PATH_ANSWER, PATH_STUDENT, REPORT_PATH, LABS_TO_CHECK, ST_ID_RANGE
+
 import datetime
 import sqlite3
 import os
 import subprocess
 from natsort import natsorted
 
-#Test DB
-#DB = 'db.sqlite'
-DB = 'grade_system.sqlite'
-PATH = '/Users/natasha/Programming/grade-system/gdisk_ccie/'
-path_answer = PATH + '_labs_answer_expert_only/labs/'
-path_student = PATH + '_students_answer/'
-report_path = '/Users/natasha/Programming/grade-system/reports/'
-
-path_answer_big_lab = PATH + '_labs_answer_expert_only/big_labs/'
-
-
-#Test
-#path_answer = PATH + '_initial_configs/labs/'
-#path_student = PATH + '_labs_answer_expert_only/labs/'
-
-
-today_data = datetime.date.today().__str__()
-labs_to_check = CHECK_LABS[today_data]
-if not labs_to_check:
-    labs_to_check = CHECK_LABS[(datetime.date.today()+datetime.timedelta(days=2)).__str__()]
 
 lab_status_values = ['Failed', 'Done', 'NotLoaded', 'ReportGenerated', 'NotComplete', 'ReportSended']
 
@@ -135,8 +117,8 @@ def check_student_lab_files(db_name, st_id, lab_id):
 
     for n in range(1,task_n+1):
         task = 'task' + str(n)
-        path_a = path_answer +  lab_name+'/' + task+'/'
-        path_s = path_student + st_gdisk_folder +lab_name+'/' + task+'/'
+        path_a = PATH_ANSWER +  lab_name+'/' + task+'/'
+        path_s = PATH_STUDENT + st_gdisk_folder +lab_name+'/' + task+'/'
         if not os.path.exists(path_s):
             return False
         if not os.path.exists(path_a):
@@ -152,12 +134,11 @@ def check_student_lab_files(db_name, st_id, lab_id):
 
 
 def check_new_loaded_labs(verbose=True):
-    st_id_range = range(1, 15)
     output = []
-    range_labs = range(1,max(labs_to_check)+1)
+    range_labs = range(1,max(LABS_TO_CHECK)+1)
 
-    for st_id in st_id_range:
-        #for lab_id in labs_to_check:
+    for st_id in ST_ID_RANGE:
+        #for lab_id in LABS_TO_CHECK:
         for lab_id in range_labs:
             lab_status_values = ['Failed', 'Done', 'ReportGenerated', 'Sended(Done)']
             lab_status = get_lab_status(DB,st_id,lab_id)
@@ -201,23 +182,23 @@ def generate_report_for_loaded_labs(verbose=True):
         lab_name = 'lab%03d' % int(lab_id)
         task_n = get_task_number(DB,lab_id)
         st_gdisk_folder = STUDENT_ID_FOLDER[st_id]+'/'+'labs/'
-        st_report_path = report_path + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
-        if not os.path.exists(st_report_path):
-            subprocess.call('mkdir '+st_report_path,shell=True)
+        st_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
+        if not os.path.exists(st_REPORT_PATH):
+            subprocess.call('mkdir '+st_REPORT_PATH,shell=True)
         diff_report = {}
 
         tasks_percent = []
         for n in range(1,task_n+1):
             task = 'task' + str(n)
-            path_a = path_answer +  lab_name+'/' + task+'/'
-            path_s = path_student + st_gdisk_folder +lab_name+'/' + task+'/'
+            path_a = PATH_ANSWER +  lab_name+'/' + task+'/'
+            path_s = PATH_STUDENT + st_gdisk_folder +lab_name+'/' + task+'/'
             lab_files = [f for f in os.listdir(path_a) if f.endswith('txt') and (f.startswith('r') or f.startswith('sw'))]
             lab_files = natsorted(lab_files, key=lambda y: y.lower())
             percent, diff_report[task] = generateLabReport(lab_name, task, lab_files, path_a, path_s)
             tasks_percent.append(str(round(percent)))
         #Write separate report for lab tasks
         for task, report in diff_report.items():
-            fname = st_report_path+'report_for_%s_%s.txt' % (lab_name, task)
+            fname = st_REPORT_PATH+'report_for_%s_%s.txt' % (lab_name, task)
             with open(fname, 'w') as f:
                 f.write(report)
             if verbose:

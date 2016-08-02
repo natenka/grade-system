@@ -1,25 +1,13 @@
-from setup import DB, get_labs_web, get_student_name, get_task_number
+from setup import get_labs_web, get_student_name, get_task_number
 from diff_report import generateLabReport
-from global_info import CHECK_LABS, STUDENT_ID_FOLDER
+from ..settings import DB, PATH_ANSWER, PATH_INITIAL_BIG_LAB, PATH_ANSWER_BIG_LAB, REPORT_PATH, LABS_TO_CHECK, PATH_INITIAL
+
 import datetime
 import sqlite3
 import os
 import subprocess
 from collections import OrderedDict as odict
 
-DB = 'grade_system.sqlite'
-PATH = '/home/nata/grade_system/main_app/gdisk_ccie/'
-path_initial = PATH + '_initial_configs/labs/'
-path_answer = PATH + '_labs_answer_expert_only/labs/'
-
-#BIG labs
-path_big_initial = PATH + '_initial_configs/big_labs/'
-path_big_answer = PATH + '_labs_answer_expert_only/big_labs/'
-
-
-today_data = datetime.date.today().__str__()
-labs_to_check = CHECK_LABS[today_data]
-lab_config_status_values = ['NotLoaded']
 
 
 def get_lab_configs_status(db_name, lab_id):
@@ -55,9 +43,9 @@ def set_task_number(db_name, lab_id, task_n):
 def check_lab_config_files(db_name, lab_id):
     lab_name = 'lab%03d' % int(lab_id)
     task_n = get_task_number(db_name,lab_id)
-    if not os.path.exists(path_initial + lab_name+'/'):
+    if not os.path.exists(PATH_INITIAL + lab_name+'/'):
         return False
-    initial_task_n = len([f for f in os.listdir(path_initial + lab_name+'/') if f.startswith('task')])
+    initial_task_n = len([f for f in os.listdir(PATH_INITIAL + lab_name+'/') if f.startswith('task')])
     #if initial_task_n > task_n:
     #    set_task_number(db_name, lab_id, initial_task_n)
     #    task_n = initial_task_n
@@ -71,8 +59,8 @@ def check_lab_config_files(db_name, lab_id):
 
     for n in range(1,task_n+1):
         task = 'task' + str(n)
-        path_i = path_initial + lab_name+'/' + task+'/'
-        path_a = path_answer +  lab_name+'/' + task+'/'
+        path_i = PATH_INITIAL + lab_name+'/' + task+'/'
+        path_a = PATH_ANSWER +  lab_name+'/' + task+'/'
 
         if not os.path.exists(path_i) or not os.path.exists(path_a):
             return False
@@ -132,9 +120,9 @@ def get_all_for_loaded_configs(i_status='Loaded', a_status='Loaded'):
 def return_cfg_files(lab_id,cfg):
     lab_name = 'lab%03d' % int(lab_id)
     if cfg == 'initial':
-        cfg_path = path_initial + lab_name+'/'
+        cfg_path = PATH_INITIAL + lab_name+'/'
     elif cfg == 'answer':
-        cfg_path = path_answer + lab_name+'/'
+        cfg_path = PATH_ANSWER + lab_name+'/'
 
     task_n = get_task_number(DB,lab_id)
 
@@ -161,13 +149,13 @@ check_new_loaded_configs()
 def check_BIG_lab_config_files(db_name, lab_id):
     lab_name = 'lab%03d' % (int(lab_id)-1000)
 
-    if not os.path.exists(path_big_initial+ lab_name+'/'):
+    if not os.path.exists(PATH_INITIAL_BIG_LAB+ lab_name+'/'):
         return False
 
     all_config_files_loaded = True
 
-    path_i = path_big_initial + lab_name+'/'
-    path_a = path_big_answer +  lab_name+'/'
+    path_i = PATH_INITIAL_BIG_LAB + lab_name+'/'
+    path_a = PATH_ANSWER_BIG_LAB +  lab_name+'/'
 
     if not os.path.exists(path_i) or not os.path.exists(path_a):
         return False

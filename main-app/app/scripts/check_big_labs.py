@@ -1,7 +1,8 @@
 from setup import DB, get_labs_web, get_student_name, get_task_number
 from diff_report import generateLabReport
-from global_info import CHECK_LABS, STUDENT_ID_FOLDER
+from global_info import STUDENT_ID_FOLDER
 from check_labs import get_lab_status, set_lab_status, set_diff_percent
+from ..settings import DB, PATH_ANSWER_BIG_LAB, REPORT_PATH, LABS_TO_CHECK, PATH_STUDENT, ST_ID_RANGE
 
 import datetime
 import sqlite3
@@ -13,17 +14,6 @@ import pwd
 import grp
 import os
 
-
-DB = 'grade_system.sqlite'
-PATH = '/home/nata/grade_system/main_app/gdisk_ccie/'
-path_answer_big_lab = PATH + '_labs_answer_expert_only/big_labs/'
-path_student = PATH + '_students_answer/'
-report_path = '/home/nata/grade_system/main_app/reports/'
-
-
-today_data = datetime.date.today().__str__()
-labs_to_check = CHECK_LABS[today_data]
-lab_status_values = ['Failed', 'Done', 'NotLoaded', 'ReportGenerated', 'NotComplete', 'ReportSended']
 
 
 def chown(path, user, group, recursive=False):
@@ -44,8 +34,8 @@ def check_student_BIG_lab_files(db_name, st_id, lab_id):
     st_gdisk_big_lab_folder = STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'
     all_stu_files_loaded = True
 
-    path_a = path_answer_big_lab + lab_name+'/'
-    path_s = path_student + st_gdisk_big_lab_folder +lab_name+'/'
+    path_a = PATH_ANSWER_BIG_LAB + lab_name+'/'
+    path_s = PATH_STUDENT + st_gdisk_big_lab_folder +lab_name+'/'
     if not os.path.exists(path_s):
         return False
 
@@ -62,10 +52,9 @@ def check_student_BIG_lab_files(db_name, st_id, lab_id):
 
 
 def check_new_loaded_BIG_labs(verbose=True):
-    st_id_range = range(1, 15)
     output = []
-    for st_id in st_id_range:
-        #for lab_id in labs_to_check:
+    for st_id in ST_ID_RANGE:
+        #for lab_id in LABS_TO_CHECK:
         for lab_id in [1001, 1002]:
             #print st_id, lab_id
             lab_status_values = ['Failed', 'Done', 'ReportGenerated', 'Sended(Done)']
@@ -105,13 +94,13 @@ def generate_report_for_loaded_BIG_labs(verbose=True):
         lab_id = d['lab_id']
         lab_name = 'lab%03d' % (int(lab_id)-1000)
         st_gdisk_big_lab_folder = STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'
-        st_report_big_lab_path = report_path + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
+        st_report_big_lab_path = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
 
         if not os.path.exists(st_report_big_lab_path):
             subprocess.call('mkdir -p '+st_report_big_lab_path, shell=True)
 
-        path_a_big = path_answer_big_lab + lab_name+'/'
-        path_s_big = path_student + st_gdisk_big_lab_folder + lab_name+'/'
+        path_a_big = PATH_ANSWER_BIG_LAB + lab_name+'/'
+        path_s_big = PATH_STUDENT + st_gdisk_big_lab_folder + lab_name+'/'
 
         lab_files = [f for f in os.listdir(path_a_big) if f.endswith('.txt') and (f.startswith('r') or f.startswith('sw'))]
         lab_files = natsorted(lab_files, key=lambda y: y.lower())

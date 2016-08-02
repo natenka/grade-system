@@ -1,22 +1,15 @@
 # -*- coding: utf-8 -*-
 
+from diff_report import generateLabReport
+from ..settings import DB, PATH_ANSWER, PATH_STUDENT, LABS_TO_CHECK, ST_ID_RANGE, PATH_ANSWER_BIG_LAB, PATH_INITIAL_BIG_LAB
+
 import sqlite3
 from os import listdir
 from os.path import isfile, join
-from diff_report import generateLabReport
-from global_info import CHECK_LABS
 import datetime
 from collections import OrderedDict as odict
 #Used for natural sorting
 from natsort import natsorted
-
-DB = 'grade_system.sqlite'
-PATH = '/home/nata/grade_system/main_app/gdisk_ccie/'
-path_answer = PATH + '_initial_configs/labs/'
-path_student = PATH + '_labs_answer_expert_only/labs/'
-
-path_big_initial = PATH + '_initial_configs/big_labs/'
-path_big_answer = PATH + '_labs_answer_expert_only/big_labs/'
 
 
 def get_config_diff_report(lab_n):
@@ -25,8 +18,8 @@ def get_config_diff_report(lab_n):
     if lab_n > 1000:
         lab = 'lab%03d' % (int(lab_n)-1000)
 
-        path_big_i = path_big_initial + lab+'/'
-        path_big_a = path_big_answer  + lab+'/'
+        path_big_i = PATH_INITIAL_BIG_LAB + lab+'/'
+        path_big_a = PATH_ANSWER_BIG_LAB  + lab+'/'
 
         all_files = [f for f in listdir(path_big_i) if not (f.startswith('Icon') or f.startswith('test'))]
         all_files = natsorted(all_files, key=lambda y: y.lower())
@@ -40,8 +33,8 @@ def get_config_diff_report(lab_n):
 
         for n in range(1,task_n+1):
             task = 'task' + str(n)
-            path_a = path_answer + lab+'/' + task+'/'
-            path_s = path_student + lab+'/' + task+'/'
+            path_a = PATH_ANSWER + lab+'/' + task+'/'
+            path_s = PATH_STUDENT + lab+'/' + task+'/'
             all_files = [f for f in listdir(path_a) if not (f.startswith('Icon') or f.startswith('test'))]
             all_files = natsorted(all_files, key=lambda y: y.lower())
 
@@ -112,10 +105,10 @@ def get_lab_info(db_name):
 
 def get_results_web(db_name, all_st=True):
     results = []
-    st_id_range = range(1, 15)
+    ST_ID_RANGE = range(1, 15)
     with sqlite3.connect(db_name) as conn:
         cursor = conn.cursor()
-        for st_id in st_id_range:
+        for st_id in ST_ID_RANGE:
             st_results = {}
             st_results['st_id'] = st_id
             st_results['student'] = get_student_name(db_name, st_id)
@@ -131,12 +124,10 @@ def get_results_web(db_name, all_st=True):
 def get_lab_stats_web(db_name):
     current_lab_results = []
     today_data = datetime.date.today().__str__()
-    labs_to_check = CHECK_LABS[today_data]
     with sqlite3.connect(db_name) as conn:
         cursor = conn.cursor()
-        if not labs_to_check:
-            labs_to_check = CHECK_LABS[(datetime.date.today()+datetime.timedelta(days=2)).__str__()]
-        range_labs = range(1,max(labs_to_check)+1) + [1001, 1002]
+
+        range_labs = range(1,max(LABS_TO_CHECK)+1) + [1001, 1002]
         #Удаляем лабы, которых нет
         range_labs.remove(3)
         range_labs.remove(10)
@@ -161,15 +152,12 @@ def get_lab_stats_web(db_name):
 def get_st_list_not_done_lab(db_name):
     lab_dict = odict()
     today_data = datetime.date.today().__str__()
-    labs_to_check = CHECK_LABS[today_data]
-    if not labs_to_check:
-        labs_to_check = CHECK_LABS[(datetime.date.today()+datetime.timedelta(days=2)).__str__()]
 
-    st_id_range = range(1,15)
+    ST_ID_RANGE = range(1,15)
 
     with sqlite3.connect(db_name) as conn:
         cursor = conn.cursor()
-        range_labs = range(1,max(labs_to_check)+1) + [1001, 1002]
+        range_labs = range(1,max(LABS_TO_CHECK)+1) + [1001, 1002]
         range_labs.remove(3)
         range_labs.remove(10)
         range_labs.remove(20)
@@ -177,7 +165,7 @@ def get_st_list_not_done_lab(db_name):
         for lab_id in range_labs:
             cursor.execute("select st_id from results where lab_id = ?", (lab_id,))
             st_done = [st[0] for st in cursor.fetchall()]
-            lab_dict[lab_id] = ', '.join([str(st) for st in st_id_range if not st in st_done])
+            lab_dict[lab_id] = ', '.join([str(st) for st in ST_ID_RANGE if not st in st_done])
 
     return lab_dict
 
