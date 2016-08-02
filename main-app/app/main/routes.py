@@ -10,12 +10,12 @@ from ..models import User
 from . import main
 from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCheckedLabs, SendMailToAllStudentsForm, EditReportForm
 
-from ..scripts.setup import DB, get_config_diff_report, get_labs_web, get_student_name, get_lab_info, get_results_web, get_lab_stats_web, get_task_number, get_st_list_not_done_lab
-from ..scripts.check_labs import report_path, set_lab_status, save_comment_in_db, set_mark_in_db, get_all_comments_for_lab, set_expert_name
+from ..scripts.setup import get_config_diff_report, get_labs_web, get_student_name, get_lab_info, get_results_web, get_lab_stats_web, get_task_number, get_st_list_not_done_lab
+from ..scripts.check_labs import set_lab_status, save_comment_in_db, set_mark_in_db, get_all_comments_for_lab, set_expert_name
 from ..scripts.check_configs import get_all_for_loaded_configs, return_cfg_files
 from ..scripts.global_info import STUDENT_ID_FOLDER
 from ..scripts.gdrive.sync_gdrive import sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time
-#from ..settings import DB
+from ..settings import DB, REPORT_PATH
 
 
 import os
@@ -85,19 +85,19 @@ def report(id):
 
     if lab_id < 1000:
         lab_name = 'lab%03d' % int(lab_id)
-        st_report_path = report_path + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
-        report_files = sorted([f for f in os.listdir(st_report_path) if f.startswith('report')])
+        st_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
+        report_files = sorted([f for f in os.listdir(st_REPORT_PATH) if f.startswith('report')])
 
         for f in report_files:
-            with open(st_report_path+f) as report_f:
+            with open(st_REPORT_PATH+f) as report_f:
                 diff_report[f.split('_')[-1].split('.')[0]] = report_f.read()
     else:
         lab_name = 'lab%03d' % (int(lab_id)-1000)
-        st_report_path = report_path + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
-        report_files = sorted([f for f in os.listdir(st_report_path) if f.startswith('report')])
+        st_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
+        report_files = sorted([f for f in os.listdir(st_REPORT_PATH) if f.startswith('report')])
 
         for f in report_files:
-            with open(st_report_path+f) as report_f:
+            with open(st_REPORT_PATH+f) as report_f:
                 diff_report['_'.join(f.split('.')[0].split('_')[2:])] = report_f.read()
 
 
@@ -120,12 +120,12 @@ def edit_report(id):
     student = get_student_name(DB, st_id)
     if lab_id < 1000:
         lab_name = 'lab%03d' % int(lab_id)
-        st_report_path = report_path + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
-        report_fname = st_report_path+'report_for_%s_%s.txt' % (lab_name, task)
+        st_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
+        report_fname = st_REPORT_PATH+'report_for_%s_%s.txt' % (lab_name, task)
     else:
         lab_name = 'lab%03d' % (int(lab_id)-1000)
-        st_report_path = report_path + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
-        report_fname = st_report_path+'report_for_big_%s.txt' % (lab_name)
+        st_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
+        report_fname = st_REPORT_PATH+'report_for_big_%s.txt' % (lab_name)
 
     with open(report_fname) as report_f:
         report = report_f.read()
