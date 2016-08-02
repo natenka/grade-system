@@ -14,7 +14,7 @@ mycreds.txt
 ######################
 *.log
 *.sql
-*.sqlite
+grade_system.sqlite
 
 # OS generated files #
 ######################
