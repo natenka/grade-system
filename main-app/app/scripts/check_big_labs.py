@@ -88,8 +88,3 @@ def generate_report_for_loaded_BIG_labs(verbose=True):
 
         set_lab_status(DB, st_id, lab_id, 'ReportGenerated')
     return output
-
-
-
-check_new_loaded_BIG_labs()
-generate_report_for_loaded_BIG_labs()

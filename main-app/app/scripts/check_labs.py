@@ -169,8 +169,3 @@ def generate_report_for_loaded_labs(verbose=True):
         set_lab_status(DB, st_id, lab_id, 'ReportGenerated')
         set_diff_percent(DB, st_id, lab_id, ','.join(tasks_percent))
     return output
-
-
-
-check_new_loaded_labs()
-generate_report_for_loaded_labs()

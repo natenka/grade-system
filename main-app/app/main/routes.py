@@ -11,7 +11,7 @@ from . import main
 from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCheckedLabs, SendMailToAllStudentsForm, EditReportForm
 
 from ..scripts.setup import get_config_diff_report, get_labs_web, get_student_name, get_lab_info, get_results_web, get_lab_stats_web, get_task_number, get_st_list_not_done_lab
-from ..scripts.check_labs import set_lab_status, save_comment_in_db, set_mark_in_db, get_all_comments_for_lab, set_expert_name
+from ..scripts.check_labs import set_lab_status, save_comment_in_db, set_mark_in_db, get_all_comments_for_lab, set_expert_name, check_new_loaded_labs, generate_report_for_loaded_labs
 from ..scripts.check_configs import get_all_for_loaded_configs, return_cfg_files
 from ..scripts.gdrive.sync_gdrive import sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time
 from ..settings import DB, REPORT_PATH, STUDENT_ID_FOLDER
@@ -32,6 +32,11 @@ def index():
 def labs():
     #subprocess.call(['python', 'app/scripts/check_labs.py'])
     #subprocess.call(['python', 'app/scripts/check_big_labs.py'])
+    generate_report_for_loaded_labs()
+    generate_report_for_loaded_BIG_labs()
+    check_new_loaded_labs()
+    check_new_loaded_BIG_labs()
+
     labs = get_labs_web(DB)
     print current_user
     return render_template('labs.html', lab_count = len(labs), labs=labs)
