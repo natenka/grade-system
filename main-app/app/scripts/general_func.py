@@ -1,4 +1,7 @@
 import sqlite3
+import os
+from natsort import natsorted
+
 
 def query_db(db_name, query, args=()):
     with sqlite3.connect(db_name) as conn:
@@ -28,3 +31,10 @@ def st_id_gdisk(db_name):
     result = query_db(db_name, query)
     result = {int(i):j for i,j in result}
     return result
+
+
+def cfg_files_in_dir(dir_name):
+    cfg_files = [
+        f for f in os.listdir(dir_name) if f.endswith('txt') and (f.startswith('r') or f.startswith('sw'))]
+    cfg_files = natsorted(cfg_files, key=lambda y: y.lower())
+    return cfg_files

@@ -8,25 +8,8 @@ import datetime
 import sqlite3
 import os
 import subprocess
-from natsort import natsorted
-from shutil import copyfile
-import pwd
-import grp
 import os
 
-
-
-def chown(path, user, group, recursive=False):
-    uid = pwd.getpwnam(user).pw_uid
-    gid = grp.getgrnam(group).gr_gid
-    if recursive:
-        for root, dirs, files in os.walk(path):
-            for momo in dirs:
-                os.chown(os.path.join(root, momo), uid, gid)
-            for momo in files:
-                os.chown(os.path.join(root, momo), uid, gid)
-    else:
-        os.chown(path, uid, gid)
 
 
 def check_student_BIG_lab_files(db_name, st_id, lab_id):
@@ -39,11 +22,8 @@ def check_student_BIG_lab_files(db_name, st_id, lab_id):
     if not os.path.exists(path_s):
         return False
 
-    lab_files = [f for f in os.listdir(path_a) if f.endswith('.txt') and (f.startswith('r') or f.startswith('sw'))]
-    stu_files = [f for f in os.listdir(path_s) if f.endswith('.txt') and (f.startswith('r') or f.startswith('sw'))]
-
-    #print lab_files
-    #print stu_files
+    lab_files = cfg_files_in_dir(path_a)
+    stu_files = cfg_files_in_dir(path_s)
 
     if len(stu_files) == 0 or not (len(lab_files) == len(stu_files)):
         return False
@@ -93,8 +73,8 @@ def generate_report_for_loaded_BIG_labs(verbose=True):
         path_a_big = PATH_ANSWER_BIG_LAB + lab_name+'/'
         path_s_big = PATH_STUDENT + st_gdisk_big_lab_folder + lab_name+'/'
 
-        lab_files = [f for f in os.listdir(path_a_big) if f.endswith('.txt') and (f.startswith('r') or f.startswith('sw'))]
-        lab_files = natsorted(lab_files, key=lambda y: y.lower())
+
+        lab_files = cfg_files_in_dir(path_a_big)
         percent, diff_report = generateLabReport(lab_name, 'task1', lab_files, path_a_big, path_s_big)
 
         fname = st_report_big_lab_path+'report_for_big_%s.txt' % lab_name

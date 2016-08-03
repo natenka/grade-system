@@ -199,14 +199,10 @@ def best():
 def best_rating():
     results = get_results_web(DB, all_st=False)
     results_by_sum_of_mark = sorted(results, key=itemgetter('total_marks'), reverse=True)
-    for s in results_by_sum_of_mark:
-        if s['st_id'] in [91,92,93,'91']:
-            results_by_sum_of_mark.remove(s)
     for i,v in enumerate(results_by_sum_of_mark, 1):
         v['place'] = i
 
     return render_template('best_rating.html', results=results_by_sum_of_mark)
-
 
 
 @main.route('/lab_stats')

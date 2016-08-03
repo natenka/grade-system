@@ -5,12 +5,9 @@ from ..settings import DB, PATH_ANSWER, PATH_STUDENT, LABS_TO_CHECK, ST_ID_RANGE
 from general_func import query_db, query_db_ret_list_of_dict
 
 import sqlite3
-from os import listdir
 from os.path import isfile, join
 import datetime
 from collections import OrderedDict as odict
-#Used for natural sorting
-from natsort import natsorted
 
 
 def get_config_diff_report(lab_n):
@@ -22,8 +19,7 @@ def get_config_diff_report(lab_n):
         path_big_i = PATH_INITIAL_BIG_LAB + lab+'/'
         path_big_a = PATH_ANSWER_BIG_LAB  + lab+'/'
 
-        all_files = [f for f in listdir(path_big_i) if not (f.startswith('Icon') or f.startswith('test'))]
-        all_files = natsorted(all_files, key=lambda y: y.lower())
+        all_files = cfg_files_in_dir(path_big_i)
 
         percent, report = generateLabReport(lab, 'task1', all_files, path_big_i, path_big_a)
         diff_report['task1'] = report
@@ -36,8 +32,7 @@ def get_config_diff_report(lab_n):
             task = 'task' + str(n)
             path_a = PATH_ANSWER + lab+'/' + task+'/'
             path_s = PATH_STUDENT + lab+'/' + task+'/'
-            all_files = [f for f in listdir(path_a) if not (f.startswith('Icon') or f.startswith('test'))]
-            all_files = natsorted(all_files, key=lambda y: y.lower())
+            all_files = cfg_files_in_dir(path_a)
 
             percent, report = generateLabReport(lab, task, all_files, path_a, path_s)
             diff_report[task] = report

@@ -44,9 +44,6 @@ def check_lab_config_files(db_name, lab_id):
     if not os.path.exists(PATH_INITIAL + lab_name+'/'):
         return False
     initial_task_n = len([f for f in os.listdir(PATH_INITIAL + lab_name+'/') if f.startswith('task')])
-    #if initial_task_n > task_n:
-    #    set_task_number(db_name, lab_id, initial_task_n)
-    #    task_n = initial_task_n
     if initial_task_n == 0:
         return False
     else:
@@ -62,8 +59,8 @@ def check_lab_config_files(db_name, lab_id):
 
         if not os.path.exists(path_i) or not os.path.exists(path_a):
             return False
-        init_files = [f for f in os.listdir(path_i) if not (f.startswith('Icon') or f.startswith('test'))]
-        answ_files = [f for f in os.listdir(path_a) if not (f.startswith('Icon') or f.startswith('test'))]
+        init_files = cfg_files_in_dir(path_i)
+        answ_files = cfg_files_in_dir(path_a)
 
         if len(init_files) == 0:
             return False
@@ -108,7 +105,7 @@ def return_cfg_files(lab_id,cfg):
     for n in range(1,task_n+1):
         task = 'task' + str(n)
         task_path = cfg_path + task + '/'
-        cfg_files = sorted([f for f in os.listdir(task_path) if f.endswith('.txt')])
+        cfg_files = sorted(cfg_files_in_dir(task_path))
         files[task] = odict()
 
         for f in cfg_files:
@@ -138,8 +135,8 @@ def check_BIG_lab_config_files(db_name, lab_id):
     if not os.path.exists(path_i) or not os.path.exists(path_a):
         return False
 
-    init_files = [f for f in os.listdir(path_i) if not (f.startswith('Icon') or f.startswith('test'))]
-    answ_files = [f for f in os.listdir(path_a) if not (f.startswith('Icon') or f.startswith('test') or f.startswith('big_lab1_solutions'))]
+    init_files = cfg_files_in_dir(path_i)
+    answ_files = cfg_files_in_dir(path_a)
 
 
     if len(init_files) == 0:

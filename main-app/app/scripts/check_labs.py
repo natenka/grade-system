@@ -1,13 +1,12 @@
 from setup import get_labs_web, get_student_name, get_task_number
 from diff_report import generateLabReport
 from ..settings import DB, PATH_ANSWER, PATH_STUDENT, REPORT_PATH, LABS_TO_CHECK, ST_ID_RANGE, STUDENT_ID_FOLDER
-from general_func import query_db, query_db_ret_list_of_dict
+from general_func import query_db, query_db_ret_list_of_dict, cfg_files_in_dir
 
 import datetime
 import sqlite3
 import os
 import subprocess
-from natsort import natsorted
 
 
 lab_status_values = ['Failed', 'Done', 'NotLoaded', 'ReportGenerated', 'NotComplete', 'ReportSended']
@@ -97,10 +96,8 @@ def check_student_lab_files(db_name, st_id, lab_id):
             return False
         if not os.path.exists(path_a):
             return False
-        lab_files = [f for f in os.listdir(path_a) if f.endswith('txt') and (f.startswith('r') or f.startswith('sw'))]
-        stu_files = [f for f in os.listdir(path_s) if f.endswith('txt') and (f.startswith('r') or f.startswith('sw'))]
-        #print lab_files
-        #print stu_files
+        lab_files = cfg_files_in_dir(path_a)
+        stu_files = cfg_files_in_dir(path_s) 
 
         if len(stu_files) == 0 or not (len(lab_files) == len(stu_files)):
             return False
@@ -157,8 +154,7 @@ def generate_report_for_loaded_labs(verbose=True):
             task = 'task' + str(n)
             path_a = PATH_ANSWER +  lab_name+'/' + task+'/'
             path_s = PATH_STUDENT + st_gdisk_folder +lab_name+'/' + task+'/'
-            lab_files = [f for f in os.listdir(path_a) if f.endswith('txt') and (f.startswith('r') or f.startswith('sw'))]
-            lab_files = natsorted(lab_files, key=lambda y: y.lower())
+            lab_files = cfg_files_in_dir(path_a)
             percent, diff_report[task] = generateLabReport(lab_name, task, lab_files, path_a, path_s)
             tasks_percent.append(str(round(percent)))
         #Write separate report for lab tasks
