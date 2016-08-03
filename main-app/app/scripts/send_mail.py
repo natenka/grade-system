@@ -12,9 +12,8 @@ import os
 
 from check_labs import report_path, get_info_for_lab_status, get_comment_mark_and_email_from_db, set_lab_status, get_all_emails_from_db
 from setup import get_labs_web, get_student_name, get_task_number
-from global_info import STUDENT_ID_FOLDER
 from gmail_creds import gmail_user, gmail_pwd
-from ..settings import DB
+from ..settings import DB, STUDENT_ID_FOLDER
 
 
 gmail_user = gmail_user

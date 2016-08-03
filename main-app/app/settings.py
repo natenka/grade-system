@@ -2,6 +2,7 @@ import os
 import datetime
 
 from scripts.lab_check_schedule import CHECK_LABS
+from scripts.general_func import st_id_gdisk
 
 
 # Path variables
@@ -27,3 +28,10 @@ today_data = datetime.date.today().__str__()
 LABS_TO_CHECK = CHECK_LABS[today_data]
 if not LABS_TO_CHECK:
     LABS_TO_CHECK = CHECK_LABS[(datetime.date.today()+datetime.timedelta(days=2)).__str__()]
+
+LAB_ID_RANGE = range(1,max(LABS_TO_CHECK)+1) + [1001, 1002]
+absent_labs = [3,10,20]
+for lab in absent_labs:
+    LAB_ID_RANGE.remove(lab)
+
+STUDENT_ID_FOLDER = st_id_gdisk(DB)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from diff_report import generateLabReport
-from ..settings import DB, PATH_ANSWER, PATH_STUDENT, LABS_TO_CHECK, ST_ID_RANGE, PATH_ANSWER_BIG_LAB, PATH_INITIAL_BIG_LAB
+from ..settings import DB, PATH_ANSWER, PATH_STUDENT, LABS_TO_CHECK, ST_ID_RANGE, LAB_ID_RANGE, PATH_ANSWER_BIG_LAB, PATH_INITIAL_BIG_LAB
 from general_func import query_db, query_db_ret_list_of_dict
 
 import sqlite3
@@ -11,12 +11,6 @@ import datetime
 from collections import OrderedDict as odict
 #Used for natural sorting
 from natsort import natsorted
-
-RANGE_LABS= range(1,max(LABS_TO_CHECK)+1) + [1001, 1002]
-#Удаляем лабы, которых нет
-absent_labs = [3,10,20]
-for lab in absent_labs:
-    RANGE_LABS.remove(lab)
 
 
 def get_config_diff_report(lab_n):
@@ -108,7 +102,7 @@ def get_lab_stats_web(db_name):
     current_lab_results = []
     today_data = datetime.date.today().__str__()
 
-    for lab_id in RANGE_LABS:
+    for lab_id in LAB_ID_RANGE:
         lab_results = {}
         lab_results['lab_id'] = lab_id
         query = "select lab_desc from labs where lab_id = ?"
@@ -132,7 +126,7 @@ def get_st_list_not_done_lab(db_name):
     lab_dict = odict()
     today_data = datetime.date.today().__str__()
 
-    for lab_id in RANGE_LABS:
+    for lab_id in LAB_ID_RANGE:
         query = "select st_id from results where lab_id = ?"
         st_done = [st[0] for st in query_db(db_name, query, args=(lab_id,))]
         lab_dict[lab_id] = ', '.join([str(st) for st in ST_ID_RANGE if not st in st_done])

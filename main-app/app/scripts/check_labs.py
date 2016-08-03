@@ -1,7 +1,6 @@
 from setup import get_labs_web, get_student_name, get_task_number
 from diff_report import generateLabReport
-from global_info import STUDENT_ID_FOLDER
-from ..settings import DB, PATH_ANSWER, PATH_STUDENT, REPORT_PATH, LABS_TO_CHECK, ST_ID_RANGE
+from ..settings import DB, PATH_ANSWER, PATH_STUDENT, REPORT_PATH, LABS_TO_CHECK, ST_ID_RANGE, STUDENT_ID_FOLDER
 from general_func import query_db, query_db_ret_list_of_dict
 
 import datetime

@@ -21,3 +21,10 @@ def query_db_ret_list_of_dict(db_name, query, keys, args=()):
                 di[k] = row[k]
             result.append(di)
         return result
+
+
+def st_id_gdisk(db_name):
+    query = "select st_id, gdrive_name from students"
+    result = query_db(db_name, query)
+    result = {int(i):j for i,j in result}
+    return result
