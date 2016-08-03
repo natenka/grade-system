@@ -2,6 +2,7 @@ from setup import get_labs_web, get_student_name, get_task_number
 from diff_report import generateLabReport
 from global_info import STUDENT_ID_FOLDER
 from ..settings import DB, PATH_ANSWER, PATH_STUDENT, REPORT_PATH, LABS_TO_CHECK, ST_ID_RANGE
+from general_func import query_db, query_db_ret_list_of_dict
 
 import datetime
 import sqlite3
@@ -17,96 +18,70 @@ def set_mark_in_db(db_name, st_id, lab_id, mark):
     """
     Set mark in DB for st_id, lab_id
     """
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        query = "update results set mark = '%s' where st_id = %s and lab_id = %s" % (mark, st_id, lab_id)
-        cursor.execute(query)
+    query = "update results set mark = '%s' where st_id = %s and lab_id = %s" % (mark, st_id, lab_id)
+    query_db(db_name, query)
 
 
 def save_comment_in_db(db_name, st_id, lab_id, comment):
     """
     Set comments for st_id, lab_id
     """
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        query = """update results set comments = "%s" where st_id = %s and lab_id = %s""" % (comment, st_id, lab_id)
-        cursor.execute(query)
+    query = """update results set comments = "%s" where st_id = %s and lab_id = %s""" % (comment, st_id, lab_id)
+    query_db(db_name, query)
 
 
 def set_expert_name(db_name, st_id, lab_id, expert):
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        query = "update results set expert = '%s' where st_id = %s and lab_id = %s" % (expert, st_id, lab_id)
-        cursor.execute(query)
+    query = "update results set expert = '%s' where st_id = %s and lab_id = %s" % (expert, st_id, lab_id)
+    query_db(db_name, query)
 
 
 def get_all_emails_from_db(db_name):
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        query = "select st_email from students"
-        cursor.execute(query)
-        emails = cursor.fetchall()
-        return emails
+    query = "select st_email from students"
+    emails = query_db(db_name, query)
+    return emails
 
 
 def get_comment_mark_and_email_from_db(db_name, st_id, lab_id):
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        query = "select comments, mark from results where lab_id = ? and st_id = ?"
-        cursor.execute(query, (lab_id,st_id))
-        result = cursor.fetchone()
+    query = "select comments, st_email, mark from results, students where lab_id = 14 and results.st_id = 5 and results.st_id = students.st_id"
+    result = query_db(db_name, query, args = (lab_id,st_id))
+    if len(result) == 3:
+        comment, email, mark = result
+    else:
+        email, mark = result
         comment = ''
-        if len(result) == 2:
-            comment, mark = result
-        else:
-            mark = result[0]
-        query = "select st_email from students where st_id = ?"
-        cursor.execute(query, (st_id,))
-        email = cursor.fetchone()
-        email = email[0]
-        return comment, email, mark
+    return comment, email, mark
 
 
 def get_all_comments_for_lab(db_name, lab_id):
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        query = "select comments from results where lab_id = ?"
-        cursor.execute(query, (lab_id,))
-        comments = cursor.fetchall()
-        result = []
-        for comment in comments:
-            if comment[0]:
-                result.append(comment[0])
-        return set(result)
+    query = "select comments from results where lab_id = ?"
+    comments = query_db(db_name, query, args = (lab_id,))
+    result = []
+    for comment in comments:
+        if comment[0]:
+            result.append(comment[0])
+    return set(result)
 
 
 def get_lab_status(db_name, st_id, lab_id):
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        query = "select status from results where lab_id = ? and st_id = ?"
-        cursor.execute(query, (lab_id,st_id))
-        status = cursor.fetchone()
-        if status:
-            status = status[0]
-        return status
+    query = "select status from results where lab_id = ? and st_id = ?"
+    status = query_db(db_name, query, (lab_id,st_id))
+    if status:
+        status = status[0]
+    return status
 
 
 def set_lab_status(db_name, st_id, lab_id, lab_status):
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        if get_lab_status(db_name, st_id, lab_id):
-            query = "update results set status = '%s' where st_id = %s and lab_id = %s" % (lab_status, st_id, lab_id)
-            cursor.execute(query)
-        else:
-            query = "insert into results (st_id, lab_id, status) values (?,?,?)"
-            cursor.execute(query, (st_id, lab_id, lab_status))
+    if get_lab_status(db_name, st_id, lab_id):
+        query = "update results set status = '%s' where st_id = %s and lab_id = %s" % (lab_status, st_id, lab_id)
+        query_db(db_name, query)
+    else:
+        query = "insert into results (st_id, lab_id, status) values (?,?,?)"
+        query_db(db_name, query, args = (st_id, lab_id, lab_status))
 
 
 def set_diff_percent(db_name, st_id, lab_id, percent):
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        query = "update results set diff = '%s' where st_id = %s and lab_id = %s" % (percent, st_id, lab_id)
-        cursor.execute(query)
+    query = "update results set diff = '%s' where st_id = %s and lab_id = %s" % (percent, st_id, lab_id)
+    query_db(db_name, query)
 
 
 def check_student_lab_files(db_name, st_id, lab_id):
@@ -159,16 +134,7 @@ def get_info_for_lab_status(status, all_labs=False):
     else:
         query = "select st_id, lab_id from results where status = ? and lab_id < 1000"
 
-    with sqlite3.connect(DB) as conn:
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute(query, (status,))
-        result=[]
-        for row in cursor.fetchmany(40):
-            di = {}
-            for k in ['lab_id','st_id']:
-                di[k] = row[k]
-            result.append(di)
+    result = query_db_ret_list_of_dict(DB, query, ['lab_id','st_id'], args=(status,))
     return result
 
 

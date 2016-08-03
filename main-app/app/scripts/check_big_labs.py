@@ -3,6 +3,7 @@ from diff_report import generateLabReport
 from global_info import STUDENT_ID_FOLDER
 from check_labs import get_lab_status, set_lab_status, set_diff_percent
 from ..settings import DB, PATH_ANSWER_BIG_LAB, REPORT_PATH, LABS_TO_CHECK, PATH_STUDENT, ST_ID_RANGE
+from general_func import query_db, query_db_ret_list_of_dict
 
 import datetime
 import sqlite3
@@ -73,16 +74,7 @@ def check_new_loaded_BIG_labs(verbose=True):
 def get_info_for_BIG_lab_status(status):
     query = "select st_id, lab_id from results where status = ? and lab_id > 1000"
 
-    with sqlite3.connect(DB) as conn:
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute(query, (status,))
-        result=[]
-        for row in cursor.fetchmany(40):
-            di = {}
-            for k in ['lab_id','st_id']:
-                di[k] = row[k]
-            result.append(di)
+    results = query_db_ret_list_of_dict(DB, query, ['lab_id','st_id'], args=(status,))
     return result
 
 

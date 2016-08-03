@@ -2,6 +2,7 @@
 
 from diff_report import generateLabReport
 from ..settings import DB, PATH_ANSWER, PATH_STUDENT, LABS_TO_CHECK, ST_ID_RANGE, PATH_ANSWER_BIG_LAB, PATH_INITIAL_BIG_LAB
+from general_func import query_db, query_db_ret_list_of_dict
 
 import sqlite3
 from os import listdir
@@ -10,6 +11,12 @@ import datetime
 from collections import OrderedDict as odict
 #Used for natural sorting
 from natsort import natsorted
+
+RANGE_LABS= range(1,max(LABS_TO_CHECK)+1) + [1001, 1002]
+#Удаляем лабы, которых нет
+absent_labs = [3,10,20]
+for lab in absent_labs:
+    RANGE_LABS.remove(lab)
 
 
 def get_config_diff_report(lab_n):
@@ -50,73 +57,49 @@ def get_labs_web(db_name):
             where students.st_id = results.st_id and status='ReportGenerated'
             order by lab_id;
             """
-    with sqlite3.connect(db_name) as conn:
-        conn.row_factory = sqlite3.Row
-
-        cursor = conn.cursor()
-        cursor.execute(query)
-        result=[]
-        for row in cursor.fetchmany(100):
-            di = {}
-            for k in ['lab_id','st_id','st_name','status','diff','live']:
-                di[k] = row[k]
-            result.append(di)
-        return result
+    keys = ['lab_id','st_id','st_name','status','diff','live']
+    result = query_db_ret_list_of_dict(db_name, query, keys)
+    return result
 
 
 def get_task_number(db_name, lab_id):
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        query = "select task_number from labs where lab_id = ?"
-        cursor.execute(query, (lab_id,))
-        task_n = int(cursor.fetchone()[0])
-        return task_n
+    query = "select task_number from labs where lab_id = ?"
+    task_n = int(query_db(db_name, query, args=(lab_id,))[0])
+    return task_n
+
 
 def get_student_name(db_name, st_id):
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        query = "select st_name from students where st_id = ?"
-        cursor.execute(query, (st_id,))
-        name = str(cursor.fetchone()[0])
-        return name
+    query = "select st_name from students where st_id = ?"
+    name = str(query_db(db_name, query, args=(st_id,))[0])
+    return name
+
 
 def set_tasks_number_for_lab(db_name, lab_id, tasks):
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        query = "update labs set task_number = %s where lab_id = %s" % (tasks, lab_id)
-        cursor.execute(query)
+    query = "update labs set task_number = %s where lab_id = %s" % (tasks, lab_id)
+    query_db(db_name, query)
+
 
 def get_lab_info(db_name):
     query = "select * from labs order by lab_id"
-
-    with sqlite3.connect(db_name) as conn:
-        conn.row_factory = sqlite3.Row
-
-        cursor = conn.cursor()
-        cursor.execute(query)
-        result=[]
-        for row in cursor.fetchmany(100):
-            di = {}
-            for k in ['lab_id','lab_desc','task_number','init_config','answer_config']:
-                di[k] = row[k]
-            result.append(di)
-        return result
+    keys = ['lab_id','lab_desc','task_number','init_config','answer_config']
+    result = query_db_ret_list_of_dict(db_name, query, keys)
+    return result
 
 
 def get_results_web(db_name, all_st=True):
     results = []
-    ST_ID_RANGE = range(1, 15)
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        for st_id in ST_ID_RANGE:
-            st_results = {}
-            st_results['st_id'] = st_id
-            st_results['student'] = get_student_name(db_name, st_id)
-            cursor.execute("select lab_id from results where st_id = ? and (status = 'Sended(Done)' or status = 'Done') and lab_id != 1001", (st_id,))
-            st_results['total_labs'] = len(cursor.fetchall())
-            cursor.execute("select mark from results where st_id = ? and (status = 'Sended(Done)' or status = 'Done') and lab_id != 1001", (st_id,))
-            st_results['total_marks'] = sum([int(i[0]) for i in cursor.fetchall() if i[0]])
-            results.append(st_results)
+    for st_id in ST_ID_RANGE:
+        st_results = {}
+        st_results['st_id'] = st_id
+        st_results['student'] = get_student_name(db_name, st_id)
+        query = "select lab_id from results where st_id = ? and (status = 'Sended(Done)' or status = 'Done') and lab_id != 1001"
+        st_results['total_labs'] = len(query_db(db_name, query, args=(st_id,)))
+
+        query = "select mark from results where st_id = ? and (status = 'Sended(Done)' or status = 'Done') and lab_id != 1001"
+        all_marks = query_db(db_name, query, args=(st_id,))
+        st_results['total_marks'] = sum([int(i[0]) for i in all_marks if i[0]])
+
+        results.append(st_results)
 
     return results
 
@@ -124,27 +107,23 @@ def get_results_web(db_name, all_st=True):
 def get_lab_stats_web(db_name):
     current_lab_results = []
     today_data = datetime.date.today().__str__()
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
 
-        range_labs = range(1,max(LABS_TO_CHECK)+1) + [1001, 1002]
-        #Удаляем лабы, которых нет
-        range_labs.remove(3)
-        range_labs.remove(10)
-        range_labs.remove(20)
-        for lab_id in range_labs:
-            lab_results = {}
-            lab_results['lab_id'] = lab_id
-            cursor.execute("select lab_desc from labs where lab_id = ?", (lab_id,))
-            lab_results['lab_desc'] = cursor.fetchone()[0]
-            cursor.execute("select st_id from results where lab_id = ?", (lab_id,))
-            lab_results['st_count'] = len(cursor.fetchall())
-            cursor.execute("select mark from results where lab_id = ?", (lab_id,))
-            if lab_results['st_count'] == 0:
-                lab_results['avg_mark'] = 0
-            else:
-                lab_results['avg_mark'] = round(float(sum([int(i[0]) for i in cursor.fetchall() if i[0]])) / lab_results['st_count'], 2)
-            current_lab_results.append(lab_results)
+    for lab_id in RANGE_LABS:
+        lab_results = {}
+        lab_results['lab_id'] = lab_id
+        query = "select lab_desc from labs where lab_id = ?"
+        lab_results['lab_desc'] = query_db(db_name, query, args=(lab_id,))[0]
+
+        query = "select st_id from results where lab_id = ?"
+        lab_results['st_count'] = len(query_db(db_name, query, args=(lab_id,)))
+
+        query = "select mark from results where lab_id = ?"
+        if lab_results['st_count'] == 0:
+            lab_results['avg_mark'] = 0
+        else:
+            marks = query_db(db_name, query, args=(lab_id,))
+            lab_results['avg_mark'] = round(float(sum([int(i[0]) for i in marks if i[0]])) / lab_results['st_count'], 2)
+        current_lab_results.append(lab_results)
 
     return current_lab_results
 
@@ -153,19 +132,10 @@ def get_st_list_not_done_lab(db_name):
     lab_dict = odict()
     today_data = datetime.date.today().__str__()
 
-    ST_ID_RANGE = range(1,15)
-
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        range_labs = range(1,max(LABS_TO_CHECK)+1) + [1001, 1002]
-        range_labs.remove(3)
-        range_labs.remove(10)
-        range_labs.remove(20)
-
-        for lab_id in range_labs:
-            cursor.execute("select st_id from results where lab_id = ?", (lab_id,))
-            st_done = [st[0] for st in cursor.fetchall()]
-            lab_dict[lab_id] = ', '.join([str(st) for st in ST_ID_RANGE if not st in st_done])
+    for lab_id in RANGE_LABS:
+        query = "select st_id from results where lab_id = ?"
+        st_done = [st[0] for st in query_db(db_name, query, args=(lab_id,))]
+        lab_dict[lab_id] = ', '.join([str(st) for st in ST_ID_RANGE if not st in st_done])
 
     return lab_dict
 

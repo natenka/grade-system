@@ -1,6 +1,7 @@
 from setup import get_labs_web, get_student_name, get_task_number
 from diff_report import generateLabReport
 from ..settings import DB, PATH_ANSWER, PATH_INITIAL_BIG_LAB, PATH_ANSWER_BIG_LAB, REPORT_PATH, LABS_TO_CHECK, PATH_INITIAL
+from general_func import query_db, query_db_ret_list_of_dict
 
 import datetime
 import sqlite3
@@ -11,16 +12,15 @@ from collections import OrderedDict as odict
 
 
 def get_lab_configs_status(db_name, lab_id):
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        query = "select init_config, answer_config from labs where lab_id = ?"
-        cursor.execute(query, (lab_id,))
-        initial, answer = cursor.fetchone()
-
-        return initial, answer
+    query = "select init_config, answer_config from labs where lab_id = ?"
+    initial, answer = query_db(db_name, query, args=(lab_id,))
+    return initial, answer
 
 
 def set_lab_configs_status(db_name, lab_id, initial='', answer=''):
+    """
+    Check function usage
+    """
     with sqlite3.connect(db_name) as conn:
         cursor = conn.cursor()
         init_status, answer_status = get_lab_configs_status(db_name, lab_id)
@@ -34,10 +34,8 @@ def set_lab_configs_status(db_name, lab_id, initial='', answer=''):
 
 
 def set_task_number(db_name, lab_id, task_n):
-    with sqlite3.connect(db_name) as conn:
-        cursor = conn.cursor()
-        query = "update labs set task_number = %s where lab_id = %s" % (task_n, lab_id)
-        cursor.execute(query)
+    query = "update labs set task_number = %s where lab_id = %s" % (task_n, lab_id)
+    query_db(db_name, query)
 
 
 def check_lab_config_files(db_name, lab_id):
@@ -77,8 +75,7 @@ def check_lab_config_files(db_name, lab_id):
 def check_new_loaded_configs():
     for lab_id in xrange(1, 150):
         i_status, a_status = get_lab_configs_status(DB, lab_id)
-        #if i_status == 'Loaded' and a_status == 'Loaded':
-        #    pass
+
         if check_lab_config_files(DB, lab_id):
             set_lab_configs_status(DB, lab_id, initial='Loaded', answer='Loaded')
             print "Set status to 'Loaded' for lab %d init and answer configs" % lab_id
@@ -86,34 +83,15 @@ def check_new_loaded_configs():
 
 def get_labs_for_configs_status(i_status='Loaded', a_status='Loaded'):
     query = "select lab_id from labs where init_config = ? and answer_config = ?"
-
-    with sqlite3.connect(DB) as conn:
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute(query, (i_status,a_status))
-        result=[]
-        for row in cursor.fetchall():
-            di = {}
-            for k in ['lab_id']:
-                di[k] = row[k]
-            result.append(di)
+    result = query_db_ret_list_of_dict(DB, query, ['lab_id'], args=(i_status,a_status))
     return result
 
 
 
 def get_all_for_loaded_configs(i_status='Loaded', a_status='Loaded'):
     query = "select * from labs where init_config = ? and answer_config = ?"
-
-    with sqlite3.connect(DB) as conn:
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute(query, (i_status,a_status))
-        result=[]
-        for row in cursor.fetchall():
-            di = {}
-            for k in ['lab_id', 'lab_desc', 'task_number', 'init_config', 'answer_config']:
-                di[k] = row[k]
-            result.append(di)
+    keys = ['lab_id', 'lab_desc', 'task_number', 'init_config', 'answer_config']
+    result = query_db_ret_list_of_dict(DB, query, keys, args=(i_status,a_status))
     return result
 
 
@@ -184,6 +162,3 @@ def check_new_loaded_configs_BIG():
 
 
 check_new_loaded_configs_BIG()
-
-
-
