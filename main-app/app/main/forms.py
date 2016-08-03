@@ -1,6 +1,7 @@
 from flask.ext.wtf import Form
-from wtforms import StringField, PasswordField, BooleanField, TextAreaField, SubmitField, IntegerField
+from wtforms import StringField, PasswordField, BooleanField, TextAreaField, SubmitField, IntegerField, SelectField
 from wtforms.validators import Required, Length
+from ..settings import ST_ID_RANGE, LAB_ID_RANGE, STUDENT_ID_FOLDER
 
 
 class LoginForm(Form):
@@ -21,6 +22,16 @@ class LabForm(Form):
 class EditReportForm(Form):
     report = TextAreaField('Report', validators=[Required()])
     save_report = SubmitField('Save Report')
+
+
+class ShowReportForm(Form):
+    select_st_id = SelectField('Select ST ID',
+                               choices = STUDENT_ID_FOLDER.items(),
+                               validators=[Required()])
+    select_lab_id = SelectField('Select Lab ID',
+                                choices = zip(LAB_ID_RANGE,["lab "+str(i) for i in LAB_ID_RANGE]),
+                                validators=[Required()])
+    open_report = SubmitField('Open report')
 
 
 class SyncGdriveForm(Form):

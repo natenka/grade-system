@@ -53,7 +53,7 @@ def check_new_loaded_BIG_labs(verbose=True):
 def get_info_for_BIG_lab_status(status):
     query = "select st_id, lab_id from results where status = ? and lab_id > 1000"
 
-    results = query_db_ret_list_of_dict(DB, query, ['lab_id','st_id'], args=(status,))
+    result = query_db_ret_list_of_dict(DB, query, ['lab_id','st_id'], args=(status,))
     return result
 
 

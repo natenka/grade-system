@@ -8,10 +8,11 @@ from flask import render_template, redirect, url_for, request
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from ..models import User
 from . import main
-from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCheckedLabs, SendMailToAllStudentsForm, EditReportForm
+from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCheckedLabs, SendMailToAllStudentsForm, EditReportForm, ShowReportForm
 
 from ..scripts.setup import get_config_diff_report, get_labs_web, get_student_name, get_lab_info, get_results_web, get_lab_stats_web, get_task_number, get_st_list_not_done_lab
-from ..scripts.check_labs import set_lab_status, save_comment_in_db, set_mark_in_db, get_all_comments_for_lab, set_expert_name, check_new_loaded_labs, generate_report_for_loaded_labs
+from ..scripts.check_labs import set_lab_status, save_comment_in_db, set_mark_in_db, get_all_comments_for_lab, set_expert_name, check_new_loaded_labs, generate_report_for_loaded_labs, get_comment_mark_and_email_from_db
+from ..scripts.check_big_labs import generate_report_for_loaded_BIG_labs, check_new_loaded_BIG_labs
 from ..scripts.check_configs import get_all_for_loaded_configs, return_cfg_files
 from ..scripts.gdrive.sync_gdrive import sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time
 from ..settings import DB, REPORT_PATH, STUDENT_ID_FOLDER
@@ -42,6 +43,20 @@ def labs():
     return render_template('labs.html', lab_count = len(labs), labs=labs)
 
 
+@main.route('/checked_labs', methods=['GET', 'POST'])
+@login_required
+def checked_labs():
+    form = ShowReportForm()
+
+    if 'open_report' in request.form.keys() and 'select_st_id' in request.form.keys() and 'select_lab_id' in request.form.keys():
+        st_id = (request.form['select_st_id'])
+        lab_id = (request.form['select_lab_id'])
+
+        return redirect(url_for('main.report', id = lab_id+'_'+st_id))
+
+    return render_template('checked_labs.html', form=form)
+
+
 @main.route('/report/<id>', methods=['GET', 'POST'])
 @login_required
 def report(id):
@@ -51,7 +66,11 @@ def report(id):
 
     comments = get_all_comments_for_lab(DB, lab_id)
 
+    #cur_comment, email, cur_mark = get_comment_mark_and_email_from_db(DB, st_id, lab_id)
     form = LabForm()
+    #form.comment.data = email
+    #form.mark.data = 50
+
     if 'done' in request.form.keys() and 'submit_grade' in request.form.keys() and 'mark' in request.form.keys():
         if 'comment' in request.form.keys():
             comment = request.form['comment']
@@ -79,8 +98,6 @@ def report(id):
 
         print 'FAILED with submit grade'
         return redirect(url_for('main.labs'))
-    else:
-        print
 
     student = get_student_name(DB, st_id)
     print student
@@ -105,7 +122,8 @@ def report(id):
                 diff_report['_'.join(f.split('.')[0].split('_')[2:])] = report_f.read()
 
 
-    return render_template('report.html', lab=lab_id, student=student, st_id=st_id, diff=diff_report, comments=comments, form=form)
+    return render_template('report.html', lab=lab_id, student=student,
+                           st_id=st_id, diff=diff_report, comments=comments, form=form)
 
 
 @main.route('/edit_report/<id>', methods=['GET', 'POST'])
