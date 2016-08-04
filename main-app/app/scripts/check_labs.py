@@ -40,8 +40,8 @@ def get_all_emails_from_db(db_name):
 
 
 def get_comment_mark_and_email_from_db(db_name, st_id, lab_id):
-    query = "select comments, st_email, mark from results, students where lab_id = 14 and results.st_id = 5 and results.st_id = students.st_id"
-    result = query_db(db_name, query)
+    query = "select comments, st_email, mark from results, students where lab_id = ? and results.st_id = ? and results.st_id = students.st_id"
+    result = query_db(db_name, query, (lab_id, st_id))
     if len(result) == 3:
         comment, email, mark = result
     else:

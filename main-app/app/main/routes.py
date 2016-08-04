@@ -57,7 +57,7 @@ def checked_labs():
     return render_template('checked_labs.html', form=form)
 
 
-@main.route('/report/<id>', methods=['GET', 'POST'])
+@main.route('/report/<id>', methods=['GET', 'POST', 'PUT'])
 @login_required
 def report(id):
     lab_id, st_id = str(id).split('_')
@@ -66,10 +66,7 @@ def report(id):
 
     comments = get_all_comments_for_lab(DB, lab_id)
 
-    #cur_comment, email, cur_mark = get_comment_mark_and_email_from_db(DB, st_id, lab_id)
     form = LabForm()
-    #form.comment.data = email
-    #form.mark.data = 50
 
     if 'done' in request.form.keys() and 'submit_grade' in request.form.keys() and 'mark' in request.form.keys():
         if 'comment' in request.form.keys():
@@ -121,6 +118,10 @@ def report(id):
             with open(st_REPORT_PATH+f) as report_f:
                 diff_report['_'.join(f.split('.')[0].split('_')[2:])] = report_f.read()
 
+    #Prefill comment and mark for checked lab
+    cur_comment, _, cur_mark = get_comment_mark_and_email_from_db(DB, st_id, lab_id)
+    form.comment.data = cur_comment
+    form.mark.data = cur_mark
 
     return render_template('report.html', lab=lab_id, student=student,
                            st_id=st_id, diff=diff_report, comments=comments, form=form)
