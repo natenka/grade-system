@@ -1,1 +1,5 @@
 .report_control     {height: 700px; width: 700px; font-family: Consolas, Monaco, monospace;}
+.table-condensed tbody tr td, .table-borderless tbody tr th, .table-borderless thead tr th {
+        border: none;
+        padding: 0px;
+    }

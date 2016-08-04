@@ -57,7 +57,7 @@ def checked_labs():
     return render_template('checked_labs.html', form=form)
 
 
-@main.route('/report/<id>', methods=['GET', 'POST', 'PUT'])
+@main.route('/report/<id>', methods=['GET', 'POST'])
 @login_required
 def report(id):
     lab_id, st_id = str(id).split('_')
@@ -123,8 +123,12 @@ def report(id):
     form.comment.data = cur_comment
     form.mark.data = cur_mark
 
+    sample_diff_list = odict()
+    for task in diff_report:
+        sample_diff_list[task] = diff_report[task].splitlines()
+
     return render_template('report.html', lab=lab_id, student=student,
-                           st_id=st_id, diff=diff_report, comments=comments, form=form)
+                           st_id=st_id, diff=diff_report, sample_diff=sample_diff_list, comments=comments, form=form)
 
 
 @main.route('/edit_report/<id>', methods=['GET', 'POST'])
