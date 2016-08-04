@@ -5,36 +5,37 @@
     <h3>Отчеты по лабораторной {{lab}} участника {{student}}</h3>
     <br>
     <br>
-    {% for task in sample_diff %}
-    <div class="spoiler-wrapper">
-        <div class="spoiler folded">
-            <a href="javascript:void(0);">Show Diff report for {{task}}</a>
-        </div>
-        <div class="spoiler-text">
-            <table class="table table-condensed" style="font-family:Courier, monospace;">
-                <tr>
-                    <th></th>
-                </tr>
-                {% for line in sample_diff[task] %}
-                {% if line.startswith('+') %}
-                    <tr class="success">
-                        <td>{{line}}</td>
-                    </tr>
-                {% elif line.startswith('-') %}
-                    <tr class="danger">
-                        <td>{{line}}</td>
-                    </tr>
-                {% else %}
+    {% for task in diff %}
+        <div class="spoiler-wrapper">
+            <div class="spoiler folded">
+                <a href="javascript:void(0);">Show Diff report for {{task}}</a>
+            </div>
+            <div class="spoiler-text">
+                <table class="table table-condensed" style="font-family:Courier, monospace;">
                     <tr>
-                        <td>{{line}}</td>
+                        <th></th>
                     </tr>
-                {% endif %}
-                {% endfor %}
-            </table>
-    </div>
-    <a href="/edit_report/{{lab}}_{{st_id}}_{{task}}">Edit report for {{task}}</a>
-    <br>
-    <br>
+                    {% for line in diff[task] %}
+                        {% if line.startswith('+') %}
+                            <tr class="success">
+                                <td>{{line}}</td>
+                            </tr>
+                        {% elif line.startswith('-') %}
+                            <tr class="danger">
+                                <td>{{line}}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td>{{line}}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <a href="/edit_report/{{lab}}_{{st_id}}_{{task}}">Edit report for {{task}}</a>
+        <br>
+        <br>
     {% endfor %}
     <br>
     <br>

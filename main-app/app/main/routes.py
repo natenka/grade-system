@@ -108,7 +108,7 @@ def report(id):
 
         for f in report_files:
             with open(st_REPORT_PATH+f) as report_f:
-                diff_report[f.split('_')[-1].split('.')[0]] = report_f.read()
+                diff_report[f.split('_')[-1].split('.')[0]] = report_f.readlines()
     else:
         lab_name = 'lab%03d' % (int(lab_id)-1000)
         st_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
@@ -116,19 +116,16 @@ def report(id):
 
         for f in report_files:
             with open(st_REPORT_PATH+f) as report_f:
-                diff_report['_'.join(f.split('.')[0].split('_')[2:])] = report_f.read()
+                diff_report['_'.join(f.split('.')[0].split('_')[2:])] = report_f.readlines()
 
     #Prefill comment and mark for checked lab
     cur_comment, _, cur_mark = get_comment_mark_and_email_from_db(DB, st_id, lab_id)
     form.comment.data = cur_comment
     form.mark.data = cur_mark
 
-    sample_diff_list = odict()
-    for task in diff_report:
-        sample_diff_list[task] = diff_report[task].splitlines()
 
     return render_template('report.html', lab=lab_id, student=student,
-                           st_id=st_id, diff=diff_report, sample_diff=sample_diff_list, comments=comments, form=form)
+                           st_id=st_id, diff=diff_report, comments=comments, form=form)
 
 
 @main.route('/edit_report/<id>', methods=['GET', 'POST'])
