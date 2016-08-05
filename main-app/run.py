@@ -10,4 +10,4 @@ if __name__ == '__main__':
         if User.query.filter_by(username='user').first() is None:
             User.register('user', 'userpass')
     app.debug = True
-    app.run(port=8080)
+    app.run(port=9090)

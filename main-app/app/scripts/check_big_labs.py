@@ -2,7 +2,7 @@ from setup import DB, get_labs_web, get_student_name, get_task_number
 from diff_report import generateLabReport
 from check_labs import get_lab_status, set_lab_status, set_diff_percent
 from ..settings import DB, PATH_ANSWER_BIG_LAB, REPORT_PATH, LABS_TO_CHECK, PATH_STUDENT, ST_ID_RANGE, STUDENT_ID_FOLDER
-from general_func import query_db, query_db_ret_list_of_dict
+from general_func import query_db, query_db_ret_list_of_dict, cfg_files_in_dir
 
 import datetime
 import sqlite3

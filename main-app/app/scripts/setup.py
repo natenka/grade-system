@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from diff_report import generateLabReport
-from ..settings import DB, PATH_ANSWER, PATH_STUDENT, LABS_TO_CHECK, ST_ID_RANGE, LAB_ID_RANGE, PATH_ANSWER_BIG_LAB, PATH_INITIAL_BIG_LAB
-from general_func import query_db, query_db_ret_list_of_dict
+from ..settings import DB, PATH_INITIAL, PATH_ANSWER, LABS_TO_CHECK, ST_ID_RANGE, LAB_ID_RANGE, PATH_ANSWER_BIG_LAB, PATH_INITIAL_BIG_LAB
+from general_func import query_db, query_db_ret_list_of_dict, cfg_files_in_dir
 
 import sqlite3
 from os.path import isfile, join
@@ -30,11 +30,11 @@ def get_config_diff_report(lab_n):
 
         for n in range(1,task_n+1):
             task = 'task' + str(n)
+            path_i = PATH_INITIAL + lab+'/' + task+'/'
             path_a = PATH_ANSWER + lab+'/' + task+'/'
-            path_s = PATH_STUDENT + lab+'/' + task+'/'
-            all_files = cfg_files_in_dir(path_a)
+            all_files = cfg_files_in_dir(path_i)
 
-            percent, report = generateLabReport(lab, task, all_files, path_a, path_s)
+            percent, report = generateLabReport(lab, task, all_files, path_i, path_a)
             diff_report[task] = report
     return diff_report
 
