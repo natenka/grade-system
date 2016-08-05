@@ -10,11 +10,15 @@ from ..models import User
 from . import main
 from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCheckedLabs, SendMailToAllStudentsForm, EditReportForm, ShowReportForm
 
-from ..scripts.setup import get_config_diff_report, get_labs_web, get_student_name, get_lab_info, get_results_web, get_lab_stats_web, get_task_number, get_st_list_not_done_lab
-from ..scripts.check_labs import set_lab_status, save_comment_in_db, set_mark_in_db, get_all_comments_for_lab, set_expert_name, check_new_loaded_labs, generate_report_for_loaded_labs, get_comment_mark_and_email_from_db
-from ..scripts.check_big_labs import generate_report_for_loaded_BIG_labs, check_new_loaded_BIG_labs
+from ..scripts.setup import get_config_diff_report, get_student_name, get_results_web, get_lab_stats_web, get_task_number, get_st_list_not_done_lab
+from ..scripts.check_labs import set_lab_status, save_comment_in_db, set_mark_in_db, get_all_comments_for_lab, set_expert_name, get_comment_mark_and_email_from_db
 from ..scripts.check_configs import get_all_for_loaded_configs, return_cfg_files
 from ..scripts.gdrive.sync_gdrive import sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time
+
+from ..scripts.helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content
+
+
+
 from ..settings import DB, REPORT_PATH, STUDENT_ID_FOLDER
 
 
@@ -33,12 +37,9 @@ def index():
 def labs():
     #subprocess.call(['python', 'app/scripts/check_labs.py'])
     #subprocess.call(['python', 'app/scripts/check_big_labs.py'])
-    generate_report_for_loaded_labs()
-    generate_report_for_loaded_BIG_labs()
-    check_new_loaded_labs()
-    check_new_loaded_BIG_labs()
+    check_labs_and_generate_reports()
 
-    labs = get_labs_web(DB)
+    labs = get_all_loaded_labs(DB)
     print current_user
     return render_template('labs.html', lab_count = len(labs), labs=labs)
 
@@ -60,72 +61,35 @@ def checked_labs():
 @main.route('/report/<id>', methods=['GET', 'POST'])
 @login_required
 def report(id):
-    lab_id, st_id = str(id).split('_')
-    lab_id = int(lab_id)
-    st_id = int(st_id)
-
-    comments = get_all_comments_for_lab(DB, lab_id)
+    lab_id, st_id = [int(i) for i in str(id).split('_')]
 
     form = LabForm()
-
-    if 'done' in request.form.keys() and 'submit_grade' in request.form.keys() and 'mark' in request.form.keys():
-        if 'comment' in request.form.keys():
-            comment = request.form['comment']
-        else:
-            comment = ''
-
-        set_lab_status(DB, st_id, lab_id, 'Done')
-        save_comment_in_db(DB, st_id, lab_id, comment)
-        set_mark_in_db(DB, st_id, lab_id, request.form['mark'])
-        set_expert_name(DB, st_id, lab_id, current_user)
-
-        print 'DONE with submit grade'
-        return redirect(url_for('main.labs'))
-
-    elif 'failed' in request.form.keys() and 'submit_grade' in request.form.keys() and 'mark' in request.form.keys():
-        if 'comment' in request.form.keys():
-            comment = request.form['comment']
-        else:
-            comment = ''
-
-        set_lab_status(DB, st_id, lab_id, 'Failed')
-        save_comment_in_db(DB, st_id, lab_id, comment)
-        set_mark_in_db(DB, st_id, lab_id, request.form['mark'])
-        set_expert_name(DB, st_id, lab_id, current_user)
-
-        print 'FAILED with submit grade'
-        return redirect(url_for('main.labs'))
-
-    student = get_student_name(DB, st_id)
-    print student
-
-    diff_report = odict()
-
-    if lab_id < 1000:
-        lab_name = 'lab%03d' % int(lab_id)
-        st_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
-        report_files = sorted([f for f in os.listdir(st_REPORT_PATH) if f.startswith('report')])
-
-        for f in report_files:
-            with open(st_REPORT_PATH+f) as report_f:
-                diff_report[f.split('_')[-1].split('.')[0]] = report_f.readlines()
-    else:
-        lab_name = 'lab%03d' % (int(lab_id)-1000)
-        st_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
-        report_files = sorted([f for f in os.listdir(st_REPORT_PATH) if f.startswith('report')])
-
-        for f in report_files:
-            with open(st_REPORT_PATH+f) as report_f:
-                diff_report['_'.join(f.split('.')[0].split('_')[2:])] = report_f.readlines()
 
     #Prefill comment and mark for checked lab
     cur_comment, _, cur_mark = get_comment_mark_and_email_from_db(DB, st_id, lab_id)
     form.comment.data = cur_comment
     form.mark.data = cur_mark
 
+    if 'submit_grade' in request.form.keys() and 'mark' in request.form.keys():
+        comment = request.form['comment'] if 'comment' in request.form.keys() else ''
+
+        if 'done' in request.form.keys():
+            set_lab_check_results(DB, st_id, lab_id, 'Done', comment, request.form['mark'], current_user)
+            print 'DONE with submit grade'
+
+        elif 'failed' in request.form.keys():
+            set_lab_check_results(DB, st_id, lab_id, 'Failed', comment, request.form['mark'], current_user)
+            print 'FAILED with submit grade'
+
+        return redirect(url_for('main.labs'))
+
+    diff_report = generate_dict_report_content(st_id, lab_id)
+    student = get_student_name(DB, st_id)
+    print student
 
     return render_template('report.html', lab=lab_id, student=student,
-                           st_id=st_id, diff=diff_report, comments=comments, form=form)
+                           st_id=st_id, diff=diff_report, form=form,
+                           comments=get_all_comments_for_lab(DB, lab_id))
 
 
 @main.route('/edit_report/<id>', methods=['GET', 'POST'])
@@ -133,23 +97,21 @@ def report(id):
 def edit_report(id):
     task = ''
     if str(id).count('_') == 2:
-        lab_id, st_id, task = str(id).split('_')
+        lab_id, st_id, task = [int(i) for i in str(id).split('_')]
     else:
-        lab_id, st_id, _, __ = str(id).split('_')
-    lab_id = int(lab_id)
-    st_id = int(st_id)
+        lab_id, st_id, _, __ = [int(i) for i in str(id).split('_')]
 
     form = EditReportForm()
-
     student = get_student_name(DB, st_id)
+
     if lab_id < 1000:
         lab_name = 'lab%03d' % int(lab_id)
-        st_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
-        report_fname = st_REPORT_PATH+'report_for_%s_%s.txt' % (lab_name, task)
+        ST_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
+        report_fname = ST_REPORT_PATH+'report_for_%s_%s.txt' % (lab_name, task)
     else:
         lab_name = 'lab%03d' % (int(lab_id)-1000)
-        st_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
-        report_fname = st_REPORT_PATH+'report_for_big_%s.txt' % (lab_name)
+        ST_REPORT_PATH= REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
+        report_fname = ST_REPORT_PATH+'report_for_big_%s.txt' % (lab_name)
 
     with open(report_fname) as report_f:
         report = report_f.read()
@@ -302,12 +264,6 @@ def logout():
 @main.route('/help')
 @login_required
 def help():
-    #Show table example
-    labs = {'lab001':{'student':'Sidorov','diff':0, 'live': 'OK'},
-            'lab002':{'student':'Ivanov','diff':10, 'live': 'OK'},
-            'lab003':{'student':'Petrov','diff':0, 'live': 'Failed'},
-            'lab004':{'student':'Kozlov','diff':15, 'live': 'Failed'}}
-    s_labs = sorted(labs.keys())
 
     return render_template('help.html', s_labs=s_labs, labs=labs)
 

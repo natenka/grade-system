@@ -63,18 +63,6 @@ def get_student_name(db_name, st_id):
     return name
 
 
-def set_tasks_number_for_lab(db_name, lab_id, tasks):
-    query = "update labs set task_number = %s where lab_id = %s" % (tasks, lab_id)
-    query_db(db_name, query)
-
-
-def get_lab_info(db_name):
-    query = "select * from labs order by lab_id"
-    keys = ['lab_id','lab_desc','task_number','init_config','answer_config']
-    result = query_db_ret_list_of_dict(db_name, query, keys)
-    return result
-
-
 def get_results_web(db_name, all_st=True):
     results = []
     for st_id in ST_ID_RANGE:

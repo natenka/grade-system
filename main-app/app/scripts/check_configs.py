@@ -1,4 +1,4 @@
-from setup import get_labs_web, get_student_name, get_task_number
+from setup import get_task_number
 from diff_report import generateLabReport
 from ..settings import DB, PATH_ANSWER, PATH_INITIAL_BIG_LAB, PATH_ANSWER_BIG_LAB, REPORT_PATH, LABS_TO_CHECK, PATH_INITIAL
 from general_func import query_db, query_db_ret_list_of_dict, cfg_files_in_dir
@@ -76,13 +76,6 @@ def check_new_loaded_configs():
         if check_lab_config_files(DB, lab_id):
             set_lab_configs_status(DB, lab_id, initial='Loaded', answer='Loaded')
             print "Set status to 'Loaded' for lab %d init and answer configs" % lab_id
-
-
-def get_labs_for_configs_status(i_status='Loaded', a_status='Loaded'):
-    query = "select lab_id from labs where init_config = ? and answer_config = ?"
-    result = query_db_ret_list_of_dict(DB, query, ['lab_id'], args=(i_status,a_status))
-    return result
-
 
 
 def get_all_for_loaded_configs(i_status='Loaded', a_status='Loaded'):
