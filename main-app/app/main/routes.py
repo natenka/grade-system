@@ -10,12 +10,9 @@ from ..models import User
 from . import main
 from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCheckedLabs, SendMailToAllStudentsForm, EditReportForm, ShowReportForm
 
-from ..scripts.setup import get_config_diff_report, get_student_name, get_results_web, get_lab_stats_web, get_task_number, get_st_list_not_done_lab
-from ..scripts.check_labs import set_lab_status, save_comment_in_db, set_mark_in_db, get_all_comments_for_lab, set_expert_name, get_comment_mark_and_email_from_db
-from ..scripts.check_configs import get_all_for_loaded_configs, return_cfg_files
 from ..scripts.gdrive.sync_gdrive import sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time
 
-from ..scripts.helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content
+from ..scripts.helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_config_diff_report, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab
 
 
 
@@ -66,7 +63,7 @@ def report(id):
     form = LabForm()
 
     #Prefill comment and mark for checked lab
-    cur_comment, _, cur_mark = get_comment_mark_and_email_from_db(DB, st_id, lab_id)
+    cur_comment, _, cur_mark = get_comment_email_mark_from_db(DB, st_id, lab_id)
     form.comment.data = cur_comment
     form.mark.data = cur_mark
 
@@ -97,25 +94,16 @@ def report(id):
 def edit_report(id):
     task = ''
     if str(id).count('_') == 2:
-        lab_id, st_id, task = [int(i) for i in str(id).split('_')]
+        lab_id, st_id, task = str(id).split('_')
+        lab_id = int(lab_id)
+        st_id = int(st_id)
     else:
         lab_id, st_id, _, __ = [int(i) for i in str(id).split('_')]
 
     form = EditReportForm()
     student = get_student_name(DB, st_id)
 
-    if lab_id < 1000:
-        lab_name = 'lab%03d' % int(lab_id)
-        ST_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
-        report_fname = ST_REPORT_PATH+'report_for_%s_%s.txt' % (lab_name, task)
-    else:
-        lab_name = 'lab%03d' % (int(lab_id)-1000)
-        ST_REPORT_PATH= REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
-        report_fname = ST_REPORT_PATH+'report_for_big_%s.txt' % (lab_name)
-
-    with open(report_fname) as report_f:
-        report = report_f.read()
-
+    report_fname, report = return_report_content(st_id, lab_id, task)
     form.report.data = report
 
     if request.form.get('save_report'):
@@ -265,7 +253,7 @@ def logout():
 @login_required
 def help():
 
-    return render_template('help.html', s_labs=s_labs, labs=labs)
+    return render_template('help.html')
 
 
 @main.app_errorhandler(404)

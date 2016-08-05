@@ -1,6 +1,5 @@
-from setup import get_task_number
 from diff_report import generateLabReport
-from ..settings import DB, PATH_ANSWER, PATH_STUDENT, REPORT_PATH, LABS_TO_CHECK, ST_ID_RANGE, STUDENT_ID_FOLDER
+from ..settings import DB, PATH_ANSWER, PATH_STUDENT, REPORT_PATH, LABS_TO_CHECK, ST_ID_RANGE, STUDENT_ID_FOLDER, LAB_ID_RANGE
 from general_func import query_db, query_db_ret_list_of_dict, cfg_files_in_dir
 
 import datetime
@@ -10,13 +9,10 @@ import subprocess
 from collections import OrderedDict as odict
 
 
-
-
-######## From scripts.setup
+### Get functions
 
 def get_config_diff_report(lab_n):
     """
-    ./app/main/routes.py:198:    diff_report = get_config_diff_report(lab_id)
     """
     diff_report = odict()
     lab_n = int(lab_n)
@@ -68,8 +64,6 @@ def get_task_number(db_name, lab_id):
 
 def get_student_name(db_name, st_id):
     """
-    ./app/main/routes.py:99:    student = get_student_name(DB, st_id)
-    ./app/main/routes.py:144:    student = get_student_name(DB, st_id)
     """
 
     query = "select st_name from students where st_id = ?"
@@ -79,10 +73,6 @@ def get_student_name(db_name, st_id):
 
 def get_results_web(db_name, all_st=True):
     """
-    ./app/main/routes.py:205:    results = get_results_web(DB)
-    ./app/main/routes.py:214:    results = get_results_web(DB)
-    ./app/main/routes.py:225:    results = get_results_web(DB, all_st=False)
-    ./app/main/routes.py:251:    results = get_results_web(DB)
     """
     results = []
     for st_id in ST_ID_RANGE:
@@ -103,7 +93,6 @@ def get_results_web(db_name, all_st=True):
 
 def get_lab_stats_web(db_name):
     """
-    ./app/main/routes.py:236:    lab_stats = get_lab_stats_web(DB)
     """
     current_lab_results = []
     today_data = datetime.date.today().__str__()
@@ -130,7 +119,6 @@ def get_lab_stats_web(db_name):
 
 def get_st_list_not_done_lab(db_name):
     """
-    ./app/main/routes.py:243:    st_not_done_lab = get_st_list_not_done_lab(DB)
     """
     lab_dict = odict()
     today_data = datetime.date.today().__str__()
@@ -143,30 +131,8 @@ def get_st_list_not_done_lab(db_name):
     return lab_dict
 
 
-######### from check_labs
-
-def set_lab_check_results(db_name, st_id, lab_id, status, comment, mark, expert):
+def get_comment_email_mark_from_db(db_name, st_id, lab_id):
     """
-    Set lab status, comment, mark, expert name
-    for specified st_id and lab_id
-    """
-    query = "update results set status = '%s', comments = '%s', mark = '%s', expert = '%s' where st_id = ? and lab_id = ?" % (status, comment, mark, expert)
-    query_db(db_name, query, args=(st_id, lab_id))
-
-
-def get_all_emails_from_db(db_name):
-    """
-    ./app/scripts/send_mail.py:50:    for e in get_all_emails_from_db(DB):
-    """
-    query = "select st_email from students"
-    emails = query_db(db_name, query)
-    return emails
-
-
-def get_comment_mark_and_email_from_db(db_name, st_id, lab_id):
-    """
-    ./app/main/routes.py:122:    cur_comment, _, cur_mark = get_comment_mark_and_email_from_db(DB, st_id, lab_id)
-    ./app/scripts/send_mail.py:86:        comment, email, mark = get_comment_mark_and_email_from_db(DB, st_id, lab_id)
     """
     query = "select comments, st_email, mark from results, students where lab_id = ? and results.st_id = ? and results.st_id = students.st_id"
     result = query_db(db_name, query, (lab_id, st_id))
@@ -188,9 +154,6 @@ def get_all_comments_for_lab(db_name, lab_id):
 
 def get_lab_status(db_name, st_id, lab_id):
     """
-    ./app/scripts/check_big_labs.py:41:            lab_status = get_lab_status(DB,st_id,lab_id)
-    ./app/scripts/check_labs.py:72:    if get_lab_status(db_name, st_id, lab_id):
-    ./app/scripts/check_labs.py:115:            lab_status = get_lab_status(DB,st_id,lab_id)
     """
     query = "select status from results where lab_id = ? and st_id = ?"
     status = query_db(db_name, query, (lab_id,st_id))
@@ -199,15 +162,55 @@ def get_lab_status(db_name, st_id, lab_id):
     return status
 
 
+def get_info_for_lab_status(status, all_labs=False):
+    """
+    """
+    if all_labs:
+        query = "select st_id, lab_id from results where status = ?"
+    else:
+        query = "select st_id, lab_id from results where status = ? and lab_id < 1000"
+
+    result = query_db_ret_list_of_dict(DB, query, ['lab_id','st_id'], args=(status,))
+    return result
+
+
+def get_info_for_BIG_lab_status(status):
+    query = "select st_id, lab_id from results where status = ? and lab_id > 1000"
+
+    result = query_db_ret_list_of_dict(DB, query, ['lab_id','st_id'], args=(status,))
+    return result
+
+
+def get_lab_configs_status(db_name, lab_id):
+    """
+    """
+    query = "select init_config, answer_config from labs where lab_id = ?"
+    initial, answer = query_db(db_name, query, args=(lab_id,))
+    return initial, answer
+
+
+def get_all_for_loaded_configs(i_status='Loaded', a_status='Loaded'):
+    """
+    """
+    query = "select * from labs where init_config = ? and answer_config = ?"
+    keys = ['lab_id', 'lab_desc', 'task_number', 'init_config', 'answer_config']
+    result = query_db_ret_list_of_dict(DB, query, keys, args=(i_status,a_status))
+    return result
+
+
+
+### Get functions
+def set_lab_check_results(db_name, st_id, lab_id, status, comment, mark, expert):
+    """
+    Set lab status, comment, mark, expert name
+    for specified st_id and lab_id
+    """
+    query = "update results set status = '%s', comments = '%s', mark = '%s', expert = '%s' where st_id = ? and lab_id = ?" % (status, comment, mark, expert)
+    query_db(db_name, query, args=(st_id, lab_id))
+
+
 def set_lab_status(db_name, st_id, lab_id, lab_status):
     """
-    ./app/main/routes.py:77:        set_lab_status(DB, st_id, lab_id, 'Done')
-    ./app/main/routes.py:91:        set_lab_status(DB, st_id, lab_id, 'Failed')
-    ./app/scripts/check_big_labs.py:45:                set_lab_status(DB, st_id, lab_id, 'Loaded')
-    ./app/scripts/check_big_labs.py:89:        set_lab_status(DB, st_id, lab_id, 'ReportGenerated')
-    ./app/scripts/check_labs.py:119:                set_lab_status(DB, st_id, lab_id, 'Loaded')
-    ./app/scripts/check_labs.py:169:        set_lab_status(DB, st_id, lab_id, 'ReportGenerated')
-    ./app/scripts/send_mail.py:95:        set_lab_status(DB, st_id, lab_id, "Sended(Done)")
     """
     if get_lab_status(db_name, st_id, lab_id):
         query = "update results set status = '%s' where st_id = %s and lab_id = %s" % (lab_status, st_id, lab_id)
@@ -219,16 +222,13 @@ def set_lab_status(db_name, st_id, lab_id, lab_status):
 
 def set_diff_percent(db_name, st_id, lab_id, percent):
     """
-    ./app/scripts/check_labs.py:170:        set_diff_percent(DB, st_id, lab_id, ','.join(tasks_percent))
     """
     query = "update results set diff = '%s' where st_id = %s and lab_id = %s" % (percent, st_id, lab_id)
     query_db(db_name, query)
 
 
-
 def check_student_lab_files(db_name, st_id, lab_id):
     """
-    ./app/scripts/check_labs.py:118:            elif lab_status == None and check_student_lab_files(DB,
     """
     lab_name = 'lab%03d' % int(lab_id)
     task_n = get_task_number(db_name,lab_id)
@@ -253,7 +253,6 @@ def check_student_lab_files(db_name, st_id, lab_id):
 
 def check_new_loaded_labs(verbose=True):
     """
-    ./app/main/routes.py:38:    check_new_loaded_labs()
     """
     output = []
     range_labs = range(1,max(LABS_TO_CHECK)+1)
@@ -274,23 +273,8 @@ def check_new_loaded_labs(verbose=True):
     return output
 
 
-def get_info_for_lab_status(status, all_labs=False):
-    """
-    ./app/scripts/check_labs.py:138:    loaded_labs = get_info_for_lab_status('Loaded')
-    ./app/scripts/send_mail.py:57:    done_labs = get_info_for_lab_status('Done', all_labs=True)
-    """
-    if all_labs:
-        query = "select st_id, lab_id from results where status = ?"
-    else:
-        query = "select st_id, lab_id from results where status = ? and lab_id < 1000"
-
-    result = query_db_ret_list_of_dict(DB, query, ['lab_id','st_id'], args=(status,))
-    return result
-
-
 def generate_report_for_loaded_labs(verbose=True):
     """
-    ./app/main/routes.py:36:    generate_report_for_loaded_labs()
     """
     loaded_labs = get_info_for_lab_status('Loaded')
     output = []
@@ -328,9 +312,7 @@ def generate_report_for_loaded_labs(verbose=True):
     return output
 
 
-######### from check_big_labs
-################ All used only here
-
+# BIG labs
 def check_student_BIG_lab_files(db_name, st_id, lab_id):
     lab_name = 'lab%03d' % (int(lab_id)-1000)
     st_gdisk_big_lab_folder = STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'
@@ -369,13 +351,6 @@ def check_new_loaded_BIG_labs(verbose=True):
     return output
 
 
-def get_info_for_BIG_lab_status(status):
-    query = "select st_id, lab_id from results where status = ? and lab_id > 1000"
-
-    result = query_db_ret_list_of_dict(DB, query, ['lab_id','st_id'], args=(status,))
-    return result
-
-
 def generate_report_for_loaded_BIG_labs(verbose=True):
     loaded_labs = get_info_for_BIG_lab_status('Loaded')
     output = []
@@ -409,31 +384,14 @@ def generate_report_for_loaded_BIG_labs(verbose=True):
     return output
 
 
-
-######### from check_config
-
-def get_lab_configs_status(db_name, lab_id):
-    """
-    ./app/scripts/check_configs.py:26:        init_status, answer_status = get_lab_configs_status(db_name, lab_id)
-    ./app/scripts/check_configs.py:74:        i_status, a_status = get_lab_configs_status(DB, lab_id)
-    ./app/scripts/check_configs.py:152:        i_status, a_status = get_lab_configs_status(DB, lab_id)
-    """
-    query = "select init_config, answer_config from labs where lab_id = ?"
-    initial, answer = query_db(db_name, query, args=(lab_id,))
-    return initial, answer
-
-
 def set_lab_configs_status(db_name, lab_id, initial='', answer=''):
     """
-    ./app/scripts/check_configs.py:77:            set_lab_configs_status(DB, lab_id, initial='Loaded', answer='Loaded')
-    ./app/scripts/check_configs.py:157:            set_lab_configs_status(DB, lab_id, initial='Loaded', answer='Loaded')
     Check function usage
     """
     with sqlite3.connect(db_name) as conn:
         cursor = conn.cursor()
         init_status, answer_status = get_lab_configs_status(db_name, lab_id)
         if initial:
-            #if init_status == 'NotLoaded':
             query = "update labs set init_config = '%s' where lab_id = %s" % (initial, lab_id)
             cursor.execute(query)
         if answer:
@@ -443,16 +401,13 @@ def set_lab_configs_status(db_name, lab_id, initial='', answer=''):
 
 def set_task_number(db_name, lab_id, task_n):
     """
-    ./app/scripts/check_configs.py:50:        set_task_number(db_name, lab_id, initial_task_n)
     """
     query = "update labs set task_number = %s where lab_id = %s" % (task_n, lab_id)
     query_db(db_name, query)
 
 
-
 def check_lab_config_files(db_name, lab_id):
     """
-    ./app/scripts/check_configs.py:76:        if check_lab_config_files(DB, lab_id):
     """
     lab_name = 'lab%03d' % int(lab_id)
     task_n = get_task_number(db_name,lab_id)
@@ -486,7 +441,6 @@ def check_lab_config_files(db_name, lab_id):
 
 def check_new_loaded_configs():
     """
-    ./app/scripts/check_configs.py:119:check_new_loaded_configs()
     """
     for lab_id in xrange(1, 150):
         i_status, a_status = get_lab_configs_status(DB, lab_id)
@@ -496,22 +450,8 @@ def check_new_loaded_configs():
             print "Set status to 'Loaded' for lab %d init and answer configs" % lab_id
 
 
-
-def get_all_for_loaded_configs(i_status='Loaded', a_status='Loaded'):
-    """
-    ./app/main/routes.py:173:    labs = get_all_for_loaded_configs()
-    """
-    query = "select * from labs where init_config = ? and answer_config = ?"
-    keys = ['lab_id', 'lab_desc', 'task_number', 'init_config', 'answer_config']
-    result = query_db_ret_list_of_dict(DB, query, keys, args=(i_status,a_status))
-    return result
-
-
-
 def return_cfg_files(lab_id,cfg):
     """
-    ./app/main/routes.py:181:    files = return_cfg_files(lab_id, 'initial')
-    ./app/main/routes.py:189:    files = return_cfg_files(lab_id, 'answer')
     """
     lab_name = 'lab%03d' % int(lab_id)
     if cfg == 'initial':
@@ -535,10 +475,8 @@ def return_cfg_files(lab_id,cfg):
     return files
 
 
-
 def check_BIG_lab_config_files(db_name, lab_id):
     """
-    ./app/scripts/check_configs.py:149:        elif check_BIG_lab_config_files(DB, lab_id):
     """
     lab_name = 'lab%03d' % (int(lab_id)-1000)
 
@@ -567,7 +505,6 @@ def check_BIG_lab_config_files(db_name, lab_id):
 
 def check_new_loaded_configs_BIG():
     """
-    ./app/scripts/check_configs.py:154:check_new_loaded_configs_BIG()
     """
     for lab_id in [1001, 1002]:
         i_status, a_status = get_lab_configs_status(DB, lab_id)
@@ -585,7 +522,6 @@ def check_labs_and_generate_reports():
     generate_report_for_loaded_BIG_labs()
     check_new_loaded_labs()
     check_new_loaded_BIG_labs()
-
 
 
 def generate_dict_report_content(st_id, lab_id):
@@ -611,3 +547,17 @@ def generate_dict_report_content(st_id, lab_id):
     return diff_report
 
 
+def return_report_content(st_id, lab_id, task):
+    if lab_id < 1000:
+        lab_name = 'lab%03d' % int(lab_id)
+        ST_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
+        report_fname = ST_REPORT_PATH+'report_for_%s_%s.txt' % (lab_name, task)
+    else:
+        lab_name = 'lab%03d' % (int(lab_id)-1000)
+        ST_REPORT_PATH= REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
+        report_fname = ST_REPORT_PATH+'report_for_big_%s.txt' % (lab_name)
+
+    with open(report_fname) as report_f:
+        report = report_f.read()
+
+    return report_fname, report

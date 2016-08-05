@@ -10,10 +10,9 @@ from email.MIMEText import MIMEText
 from email import Encoders
 import os
 
-from check_labs import report_path, get_info_for_lab_status, get_comment_mark_and_email_from_db, set_lab_status, get_all_emails_from_db
-from setup import get_task_number
+from helpers import query_db, get_info_for_lab_status, get_comment_email_mark_from_db, set_lab_status, get_task_number
 from gmail_creds import gmail_user, gmail_pwd
-from ..settings import DB, STUDENT_ID_FOLDER
+from ..settings import DB, STUDENT_ID_FOLDER, REPORT_PATH
 
 
 gmail_user = gmail_user
@@ -47,7 +46,9 @@ def mail(to, subject, text, attach=None):
 
 
 def send_mail_to_all_students(message):
-    for e in get_all_emails_from_db(DB):
+    all_emails = query_db(DB, "select st_email from students")
+
+    for e in all_emails:
         email = e[0]
         if len(email) > 3:
             mail(email, "[Lab] Big Lab 2!", message)
@@ -62,9 +63,9 @@ def send_mail_with_reports():
         if int(lab_id) > 1000:
             lab_name = 'lab%03d' % (int(lab_id) - 1000)
             st_gdisk_folder = STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'
-            st_report_path = report_path + st_gdisk_folder +lab_name+'/'
+            st_REPORT_PATH = REPORT_PATH+ st_gdisk_folder +lab_name+'/'
             files_to_attach = []
-            fname = st_report_path+'report_for_big_%s.txt' % lab_name
+            fname = st_REPORT_PATH+'report_for_big_%s.txt' % lab_name
             files_to_attach.append(fname)
 
             text_header = "[Lab] Big Lab %d is Done. Good Job!" % (int(lab_id) - 1000)
@@ -72,18 +73,18 @@ def send_mail_with_reports():
             lab_name = 'lab%03d' % int(lab_id)
             task_n = get_task_number(DB,lab_id)
             st_gdisk_folder = STUDENT_ID_FOLDER[st_id]+'/'+'labs/'
-            st_report_path = report_path + st_gdisk_folder +lab_name+'/'
+            st_REPORT_PATH = REPORT_PATH+ st_gdisk_folder +lab_name+'/'
 
             files_to_attach = []
             for n in range(1,task_n+1):
                 task = 'task' + str(n)
-                fname = st_report_path+'report_for_%s_%s.txt' % (lab_name, task)
+                fname = st_REPORT_PATH+'report_for_%s_%s.txt' % (lab_name, task)
                 files_to_attach.append(fname)
 
             text_header = "[Lab] Lab %s is Done. Good Job!" % lab_id
 
         print STUDENT_ID_FOLDER[st_id], lab_name
-        comment, email, mark = get_comment_mark_and_email_from_db(DB, st_id, lab_id)
+        comment, email, mark = get_comment_email_mark_from_db(DB, st_id, lab_id)
         if not comment:
             comment = ''
         mark_text = u"\n\nБаллы за лабораторную: " + str(mark)
