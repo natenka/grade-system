@@ -15,7 +15,6 @@ class LabForm(Form):
     comment = TextAreaField('\nAdd comment (optional)')
     mark = IntegerField('Enter lab mark', validators=[Required()])
     submit_grade = BooleanField('Submit grade', validators=[Required()])
-    failed = SubmitField('Failed')
     done = SubmitField('Done')
 
 
@@ -50,5 +49,5 @@ class SendCheckedLabs(Form):
 class SendMailToAllStudentsForm(Form):
     header = TextAreaField('Enter email header')
     message = TextAreaField('Add email message')
-    confirm = BooleanField('Confirm')
-    send = SubmitField('Send')
+    all_confirm = BooleanField('Confirm')
+    all_send = SubmitField('Send')

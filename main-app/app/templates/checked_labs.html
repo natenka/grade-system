@@ -10,5 +10,29 @@
             {{ wtf.quick_form(form) }}
         </div>
     </div>
+    <h3>Лабораторные проверенные текущим экспертом</h3>
+    <p>Лабораторные отсортированы таким образом, что последняя проверенная лабораторная первая в таблице</p>
+    <br>
+    <br>
+        <table class="table table-hover">
+            <tr>
+                <th>Lab</th>
+                <th>Student_ID</th>
+                <th>Student name</th>
+                <th>Баллы</th>
+                <th>Отчет</th>
+            </tr>
+            {% for lab in checked_labs %}
+            <tr>
+                <td>{{lab['lab_id']}}</td>
+                <td>{{lab['st_id']}}</td>
+                <td>{{lab['st_name']}}</td>
+                <td>{{lab['mark']}}</td>
+                <td><a href="report/{{lab['lab_id']}}_{{lab['st_id']}}">Перейти к отчету</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <br>
 
 {% endblock %}

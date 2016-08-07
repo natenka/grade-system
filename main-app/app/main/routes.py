@@ -12,7 +12,8 @@ from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCh
 
 from ..scripts.gdrive.sync_gdrive import sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time
 
-from ..scripts.helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_config_diff_report, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab
+from ..scripts.helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_config_diff_report, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert
+#from ..scripts.send_mail import send_mail_with_reports
 
 
 
@@ -51,8 +52,9 @@ def checked_labs():
         lab_id = (request.form['select_lab_id'])
 
         return redirect(url_for('main.report', id = lab_id+'_'+st_id))
+    checked_lab_cur_expert = get_all_labs_checked_by_expert(DB, str(current_user))
 
-    return render_template('checked_labs.html', form=form)
+    return render_template('checked_labs.html', checked_labs=checked_lab_cur_expert, form=form)
 
 
 @main.route('/report/<id>', methods=['GET', 'POST'])
@@ -221,6 +223,9 @@ def manage():
         if not students_updated:
             sync(students_folder_id)
             set_last_sync(update_students=True)
+
+    if 'confirm' in request.form.keys() and 'send' in request.form.keys():
+        send_mail_with_reports()
 
     configs_upd_time, students_upd_time = get_last_sync_time()
 
