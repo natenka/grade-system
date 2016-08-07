@@ -15,13 +15,12 @@ from ..scripts.gdrive.sync_gdrive import sync, configs_folder_id, students_folde
 from ..scripts.helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_config_diff_report, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert
 #from ..scripts.send_mail import send_mail_with_reports
 
-
-
 from ..settings import DB, REPORT_PATH, STUDENT_ID_FOLDER
 
 
 import os
 import subprocess
+import datetime
 from operator import itemgetter
 from collections import OrderedDict as odict
 
@@ -61,6 +60,7 @@ def checked_labs():
 @login_required
 def report(id):
     lab_id, st_id = [int(i) for i in str(id).split('_')]
+    today_data = str(datetime.datetime.today().__str__().split('.')[0])
 
     form = LabForm()
 
@@ -73,12 +73,8 @@ def report(id):
         comment = request.form['comment'] if 'comment' in request.form.keys() else ''
 
         if 'done' in request.form.keys():
-            set_lab_check_results(DB, st_id, lab_id, 'Done', comment, request.form['mark'], current_user)
+            set_lab_check_results(DB, st_id, lab_id, 'Done', comment, request.form['mark'], current_user, today_data)
             print 'DONE with submit grade'
-
-        elif 'failed' in request.form.keys():
-            set_lab_check_results(DB, st_id, lab_id, 'Failed', comment, request.form['mark'], current_user)
-            print 'FAILED with submit grade'
 
         return redirect(url_for('main.labs'))
 

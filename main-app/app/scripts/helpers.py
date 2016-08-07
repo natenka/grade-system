@@ -13,12 +13,14 @@ from collections import OrderedDict as odict
 
 def get_all_labs_checked_by_expert(db_name, expert):
     query = """
-            select lab_id, results.st_id, st_name, mark
+            select lab_id, results.st_id, st_name, mark, check_time
             from results,students
             where students.st_id = results.st_id and expert=?;
             """
-    keys = ['lab_id','st_id','st_name','mark']
-    result = reversed(query_db_ret_list_of_dict(db_name, query, keys, (expert,)))
+    keys = ['lab_id','st_id','st_name','mark', 'check_time']
+    result = query_db_ret_list_of_dict(db_name, query, keys, (expert,))
+    result = sorted(result, key=lambda k: k['check_time'], reverse=True)
+
     return result
 
 def get_config_diff_report(lab_n):
@@ -210,13 +212,13 @@ def get_all_for_loaded_configs(i_status='Loaded', a_status='Loaded'):
 
 
 ### Get functions
-def set_lab_check_results(db_name, st_id, lab_id, status, comment, mark, expert):
+def set_lab_check_results(db_name, st_id, lab_id, status, comment, mark, expert, today_data):
     """
     Set lab status, comment, mark, expert name
     for specified st_id and lab_id
     """
 
-    query = '''update results set status = '%s', comments = '%s', mark = '%s', expert = '%s' where st_id = ? and lab_id = ?''' % (status, comment, mark, expert)
+    query = '''update results set status = '%s', comments = '%s', mark = '%s', expert = '%s', check_time = '%s' where st_id = ? and lab_id = ?''' % (status, comment, mark, expert, today_data)
 
     query_db(db_name, query, args=(st_id, lab_id))
 

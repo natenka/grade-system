@@ -20,6 +20,7 @@
                 <th>Student_ID</th>
                 <th>Student name</th>
                 <th>Баллы</th>
+                <th>Время проверки</th>
                 <th>Отчет</th>
             </tr>
             {% for lab in checked_labs %}
@@ -28,6 +29,7 @@
                 <td>{{lab['st_id']}}</td>
                 <td>{{lab['st_name']}}</td>
                 <td>{{lab['mark']}}</td>
+                <td>{{lab['check_time']}}</td>
                 <td><a href="report/{{lab['lab_id']}}_{{lab['st_id']}}">Перейти к отчету</a></td>
             </tr>
             {% endfor %}
