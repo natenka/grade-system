@@ -29,7 +29,7 @@
                 <td>{{lab['st_id']}}</td>
                 <td>{{lab['st_name']}}</td>
                 <td>{{lab['mark']}}</td>
-                <td>{{ moment(lab['check_time']).fromNow(refresh=True) }}</td>
+                <td>{{ moment(lab['check_time']).format('LLL') }}</td>
                 <td><a href="report/{{lab['lab_id']}}_{{lab['st_id']}}">Перейти к отчету</a></td>
             </tr>
             {% endfor %}

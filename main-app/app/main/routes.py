@@ -32,8 +32,6 @@ def index():
 @main.route('/labs', methods=['GET', 'POST'])
 @login_required
 def labs():
-    #subprocess.call(['python', 'app/scripts/check_labs.py'])
-    #subprocess.call(['python', 'app/scripts/check_big_labs.py'])
     check_labs_and_generate_reports()
 
     labs = get_all_loaded_labs(DB)
@@ -46,7 +44,7 @@ def labs():
 def checked_labs():
     form = ShowReportForm()
 
-    if 'open_report' in request.form.keys() and 'select_st_id' in request.form.keys() and 'select_lab_id' in request.form.keys():
+    if form.validate_on_submit():
         st_id = (request.form['select_st_id'])
         lab_id = (request.form['select_lab_id'])
 

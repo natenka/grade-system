@@ -4,6 +4,7 @@ from wtforms.validators import Required, Length
 from ..settings import ST_ID_RANGE, LAB_ID_RANGE, STUDENT_ID_FOLDER
 
 
+
 class LoginForm(Form):
     username = StringField('Username', validators=[Required(), Length(1, 16)])
     password = PasswordField('Password', validators=[Required()])
@@ -25,11 +26,9 @@ class EditReportForm(Form):
 
 class ShowReportForm(Form):
     select_st_id = SelectField('Select ST ID',
-                               choices = STUDENT_ID_FOLDER.items(),
-                               validators=[Required()])
+                               choices = [(str(i),j) for i,j in STUDENT_ID_FOLDER.items()])
     select_lab_id = SelectField('Select Lab ID',
-                                choices = zip(LAB_ID_RANGE,["lab "+str(i) for i in LAB_ID_RANGE]),
-                                validators=[Required()])
+                                choices = zip([str(i) for i in LAB_ID_RANGE],["lab "+str(i) for i in LAB_ID_RANGE]))
     open_report = SubmitField('Open report')
 
 
@@ -47,7 +46,7 @@ class SendCheckedLabs(Form):
 
 
 class SendMailToAllStudentsForm(Form):
-    header = TextAreaField('Enter email header')
-    message = TextAreaField('Add email message')
+    header = TextAreaField('Enter email header', validators=[Required()])
+    message = TextAreaField('Add email message', validators=[Required()])
     all_confirm = BooleanField('Confirm')
     all_send = SubmitField('Send')
