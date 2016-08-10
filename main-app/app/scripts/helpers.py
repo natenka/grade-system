@@ -278,7 +278,7 @@ def check_new_loaded_labs(verbose=True):
             lab_status = get_lab_status(DB,st_id,lab_id)
             if lab_status in lab_status_values:
                 pass
-            elif lab_status == None and check_student_lab_files(DB, st_id, lab_id):
+            elif not lab_status and check_student_lab_files(DB, st_id, lab_id):
                 set_lab_status(DB, st_id, lab_id, 'Loaded')
                 if verbose:
                     print "Set status to 'Loaded' for lab %d student %d" % (lab_id, st_id)
