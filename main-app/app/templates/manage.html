@@ -8,7 +8,7 @@
     <br>
     <h4>Синхронизация каталогов Google Drive:</h4>
     <br>
-    <h5>Синхронизация initial/answer configs (Last sync: МСК {{configs_upd_time}}):</h5>
+    <h5>Синхронизация initial/answer configs (Last sync: {{ moment(configs_upd_time).fromNow(refresh=True) }}):</h5>
     <div class="row">
         <div class="col-md-3">
             {{ wtf.quick_form(sync_gdrive) }}
@@ -16,7 +16,7 @@
     </div>
     <br>
     <br>
-    <h5>Синхронизация students configs (Last sync: МСК {{students_upd_time}}):</h5>
+    <h5>Синхронизация students configs (Last sync: {{ moment(students_upd_time).fromNow(refresh=True) }}):</h5>
     <div class="row">
         <div class="col-md-3">
             {{ wtf.quick_form(sync_stu_gdrive) }}

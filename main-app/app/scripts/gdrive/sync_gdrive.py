@@ -4,7 +4,7 @@ import sys
 import yaml
 import datetime
 
-last_sync_file = '/home/nata/grade_system/main_app/app/scripts/gdrive/last_sync.yml'
+last_sync_file = '/Users/natasha/Programming/grade-system/main-app/app/scripts/gdrive/last_sync.yml'
 
 
 configs_folder_id = {
@@ -27,7 +27,7 @@ def sync(folders):
 
 def last_sync(configs_updated=False, students_updated=False):
     file_content = {}
-    current_time = datetime.datetime.now()
+    current_time = datetime.datetime.utcnow()
     configs_upd_time = datetime.datetime(2016, 4, 1, 0, 0)
     students_upd_time = datetime.datetime(2016, 4, 1, 0, 0)
 
@@ -48,7 +48,7 @@ def last_sync(configs_updated=False, students_updated=False):
 
 
 def set_last_sync(update_configs=False, update_students=False):
-    current_time = datetime.datetime.now()
+    current_time = datetime.datetime.utcnow()
     with open(last_sync_file, 'r') as f:
         file_content = yaml.load(f)
         if not file_content:
@@ -67,11 +67,9 @@ def get_last_sync_time():
         configs_upd_time = datetime.datetime.strptime(file_content['configs_upd_time'], '%Y-%m-%d %H:%M:%S.%f')
         students_upd_time = datetime.datetime.strptime(file_content['students_upd_time'], '%Y-%m-%d %H:%M:%S.%f')
 
-        configs_upd_time += datetime.timedelta(hours=3)
-        students_upd_time += datetime.timedelta(hours=3)
+        #configs_upd_time += datetime.timedelta(hours=3)
+        #students_upd_time += datetime.timedelta(hours=3)
 
-        configs_upd_time = configs_upd_time.__str__().split('.')[0]
-        students_upd_time = students_upd_time.__str__().split('.')[0]
     return configs_upd_time, students_upd_time
 
 

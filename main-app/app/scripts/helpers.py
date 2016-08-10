@@ -20,6 +20,8 @@ def get_all_labs_checked_by_expert(db_name, expert):
     keys = ['lab_id','st_id','st_name','mark', 'check_time']
     result = query_db_ret_list_of_dict(db_name, query, keys, (expert,))
     result = sorted(result, key=lambda k: k['check_time'], reverse=True)
+    for d in result:
+        d['check_time'] = datetime.datetime.strptime(d['check_time'], '%Y-%m-%d %H:%M:%S')
 
     return result
 

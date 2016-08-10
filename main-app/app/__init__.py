@@ -3,6 +3,7 @@ from flask import Flask
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
+from flask.ext.moment import Moment
 
 bootstrap = Bootstrap()
 db = SQLAlchemy()
@@ -24,6 +25,8 @@ def create_app(config_name):
     bootstrap.init_app(app)
     db.init_app(app)
     lm.init_app(app)
+
+    moment = Moment(app)
 
     # import blueprints
     from .main import main as main_blueprint

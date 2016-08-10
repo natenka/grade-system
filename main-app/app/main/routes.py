@@ -60,7 +60,7 @@ def checked_labs():
 @login_required
 def report(id):
     lab_id, st_id = [int(i) for i in str(id).split('_')]
-    today_data = str(datetime.datetime.today().__str__().split('.')[0])
+    today_data = str(datetime.datetime.utcnow().__str__().split('.')[0])
 
     form = LabForm()
 
