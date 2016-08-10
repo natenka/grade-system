@@ -211,14 +211,17 @@ def manage():
         if not configs_updated:
             sync(configs_folder_id)
             set_last_sync(update_configs=True)
+            return redirect(url_for('main.manage'))
     if 'sync_students' in request.form.keys():
         _, students_updated = last_sync()
         if not students_updated:
             sync(students_folder_id)
             set_last_sync(update_students=True)
+            return redirect(url_for('main.manage'))
 
     if 'confirm' in request.form.keys() and 'send' in request.form.keys():
         send_mail_with_reports()
+        return redirect(url_for('main.manage'))
 
     configs_upd_time, students_upd_time = get_last_sync_time()
 
