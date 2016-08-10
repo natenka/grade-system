@@ -67,12 +67,11 @@ def report(id):
     form.comment.data = cur_comment
     form.mark.data = cur_mark
 
-    if 'submit_grade' in request.form.keys() and 'mark' in request.form.keys():
+    if form.validate_on_submit():
         comment = request.form['comment'] if 'comment' in request.form.keys() else ''
 
-        if 'done' in request.form.keys():
-            set_lab_check_results(DB, st_id, lab_id, 'Done', comment, request.form['mark'], current_user, today_data)
-            print 'DONE with submit grade'
+        set_lab_check_results(DB, st_id, lab_id, 'Done', comment, request.form['mark'], current_user, today_data)
+        print 'DONE with submit grade'
 
         return redirect(url_for('main.labs'))
 
@@ -102,7 +101,7 @@ def edit_report(id):
     report_fname, report = return_report_content(st_id, lab_id, task)
     form.report.data = report
 
-    if request.form.get('save_report'):
+    if form.validate_on_submit():
         with open(report_fname, 'w') as report_f:
             report_f.write(request.form['report'])
         return redirect(url_for('main.report', id=str(lab_id)+'_'+str(st_id) ))

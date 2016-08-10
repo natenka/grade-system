@@ -1,6 +1,6 @@
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, TextAreaField, SubmitField, IntegerField, SelectField
-from wtforms.validators import Required, Length
+from wtforms.validators import Required, Length, NumberRange
 from ..settings import ST_ID_RANGE, LAB_ID_RANGE, STUDENT_ID_FOLDER
 
 
@@ -14,13 +14,13 @@ class LoginForm(Form):
 
 class LabForm(Form):
     comment = TextAreaField('\nAdd comment (optional)')
-    mark = IntegerField('Enter lab mark', validators=[Required()])
+    mark = IntegerField('Enter lab mark')
     submit_grade = BooleanField('Submit grade', validators=[Required()])
     done = SubmitField('Done')
 
 
 class EditReportForm(Form):
-    report = TextAreaField('Report', validators=[Required()])
+    report = TextAreaField('Report')
     save_report = SubmitField('Save Report')
 
 
