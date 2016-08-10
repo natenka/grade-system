@@ -25,7 +25,6 @@ def create_app(config_name):
     bootstrap.init_app(app)
     db.init_app(app)
     lm.init_app(app)
-
     moment = Moment(app)
 
     # import blueprints

@@ -67,9 +67,6 @@ def get_last_sync_time():
         configs_upd_time = datetime.datetime.strptime(file_content['configs_upd_time'], '%Y-%m-%d %H:%M:%S.%f')
         students_upd_time = datetime.datetime.strptime(file_content['students_upd_time'], '%Y-%m-%d %H:%M:%S.%f')
 
-        #configs_upd_time += datetime.timedelta(hours=3)
-        #students_upd_time += datetime.timedelta(hours=3)
-
     return configs_upd_time, students_upd_time
 
 
