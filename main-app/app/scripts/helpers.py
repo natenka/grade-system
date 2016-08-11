@@ -1,5 +1,5 @@
 from diff_report import generateLabReport
-from ..settings import PATH_ANSWER, PATH_STUDENT, REPORT_PATH, LABS_TO_CHECK, ST_ID_RANGE, STUDENT_ID_FOLDER, LAB_ID_RANGE
+from ..settings import LABS_TO_CHECK, ST_ID_RANGE, LAB_ID_RANGE
 from general_func import query_db, query_db_ret_list_of_dict, cfg_files_in_dir
 
 import datetime
@@ -25,7 +25,7 @@ def get_all_labs_checked_by_expert(db_name, expert):
 
     return result
 
-def get_config_diff_report(db_name, lab_n):
+def get_config_diff_report(db_name, lab_n, config):
     """
     """
     diff_report = odict()
@@ -33,8 +33,8 @@ def get_config_diff_report(db_name, lab_n):
     if lab_n > 1000:
         lab = 'lab%03d' % (int(lab_n)-1000)
 
-        path_big_i = PATH_INITIAL_BIG_LAB + lab+'/'
-        path_big_a = PATH_ANSWER_BIG_LAB  + lab+'/'
+        path_big_i = config['PATH_INITIAL_BIG_LAB'] + lab+'/'
+        path_big_a = config['PATH_ANSWER_BIG_LAB']  + lab+'/'
 
         all_files = cfg_files_in_dir(path_big_i)
 
@@ -47,8 +47,8 @@ def get_config_diff_report(db_name, lab_n):
 
         for n in range(1,task_n+1):
             task = 'task' + str(n)
-            path_i = PATH_INITIAL + lab+'/' + task+'/'
-            path_a = PATH_ANSWER + lab+'/' + task+'/'
+            path_i = config['PATH_INITIAL'] + lab+'/' + task+'/'
+            path_a = config['PATH_ANSWER'] + lab+'/' + task+'/'
             all_files = cfg_files_in_dir(path_i)
 
             percent, report = generateLabReport(lab, task, all_files, path_i, path_a)
@@ -243,18 +243,18 @@ def set_diff_percent(db_name, st_id, lab_id, percent):
     query_db(db_name, query)
 
 
-def check_student_lab_files(db_name, st_id, lab_id):
+def check_student_lab_files(db_name, st_id, lab_id, config):
     """
     """
     lab_name = 'lab%03d' % int(lab_id)
     task_n = get_task_number(db_name,lab_id)
-    st_gdisk_folder = STUDENT_ID_FOLDER[st_id]+'/'+'labs/'
+    st_gdisk_folder = config['STUDENT_ID_FOLDER'][st_id]+'/'+'labs/'
     all_stu_files_loaded = True
 
     for n in range(1,task_n+1):
         task = 'task' + str(n)
-        path_a = PATH_ANSWER +  lab_name+'/' + task+'/'
-        path_s = PATH_STUDENT + st_gdisk_folder +lab_name+'/' + task+'/'
+        path_a = config['PATH_ANSWER'] +  lab_name+'/' + task+'/'
+        path_s = config['PATH_STUDENT'] + st_gdisk_folder +lab_name+'/' + task+'/'
         if not os.path.exists(path_s):
             return False
         if not os.path.exists(path_a):
@@ -267,11 +267,11 @@ def check_student_lab_files(db_name, st_id, lab_id):
     return all_stu_files_loaded
 
 
-def check_new_loaded_labs(db_name,verbose=True):
+def check_new_loaded_labs(db_name,config, verbose=True):
     """
     """
     output = []
-    range_labs = range(1,max(LABS_TO_CHECK)+1)
+    range_labs = range(1,max(config['LABS_TO_CHECK'])+1)
 
     for st_id in ST_ID_RANGE:
         #for lab_id in LABS_TO_CHECK:
@@ -280,7 +280,7 @@ def check_new_loaded_labs(db_name,verbose=True):
             lab_status = get_lab_status(db_name,st_id,lab_id)
             if lab_status in lab_status_values:
                 pass
-            elif not lab_status and check_student_lab_files(db_name, st_id, lab_id):
+            elif not lab_status and check_student_lab_files(db_name, st_id, lab_id, config):
                 set_lab_status(db_name, st_id, lab_id, 'Loaded')
                 if verbose:
                     print "Set status to 'Loaded' for lab %d student %d" % (lab_id, st_id)
@@ -289,9 +289,10 @@ def check_new_loaded_labs(db_name,verbose=True):
     return output
 
 
-def generate_report_for_loaded_labs(db_name, verbose=True):
+def generate_report_for_loaded_labs(db_name, config, verbose=True):
     """
     """
+    STUDENT_ID_FOLDER = config['STUDENT_ID_FOLDER']
     loaded_labs = get_info_for_lab_status(db_name, 'Loaded')
     output = []
     for d in loaded_labs:
@@ -301,7 +302,7 @@ def generate_report_for_loaded_labs(db_name, verbose=True):
         lab_name = 'lab%03d' % int(lab_id)
         task_n = get_task_number(db_name,lab_id)
         st_gdisk_folder = STUDENT_ID_FOLDER[st_id]+'/'+'labs/'
-        st_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
+        st_REPORT_PATH = config['REPORT_PATH'] + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
         if not os.path.exists(st_REPORT_PATH):
             subprocess.call('mkdir '+st_REPORT_PATH,shell=True)
         diff_report = {}
@@ -309,8 +310,8 @@ def generate_report_for_loaded_labs(db_name, verbose=True):
         tasks_percent = []
         for n in range(1,task_n+1):
             task = 'task' + str(n)
-            path_a = PATH_ANSWER +  lab_name+'/' + task+'/'
-            path_s = PATH_STUDENT + st_gdisk_folder +lab_name+'/' + task+'/'
+            path_a = config['PATH_ANSWER'] +  lab_name+'/' + task+'/'
+            path_s = config['PATH_STUDENT'] + st_gdisk_folder +lab_name+'/' + task+'/'
             lab_files = cfg_files_in_dir(path_a)
             percent, diff_report[task] = generateLabReport(lab_name, task, lab_files, path_a, path_s)
             tasks_percent.append(str(round(percent)))
@@ -329,13 +330,13 @@ def generate_report_for_loaded_labs(db_name, verbose=True):
 
 
 # BIG labs
-def check_student_BIG_lab_files(db_name, st_id, lab_id):
+def check_student_BIG_lab_files(db_name, st_id, lab_id, config):
     lab_name = 'lab%03d' % (int(lab_id)-1000)
-    st_gdisk_big_lab_folder = STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'
+    st_gdisk_big_lab_folder = config['STUDENT_ID_FOLDER'][st_id]+'/'+'big_labs/'
     all_stu_files_loaded = True
 
-    path_a = PATH_ANSWER_BIG_LAB + lab_name+'/'
-    path_s = PATH_STUDENT + st_gdisk_big_lab_folder +lab_name+'/'
+    path_a = config['PATH_ANSWER_BIG_LAB'] + lab_name+'/'
+    path_s = config['PATH_STUDENT'] + st_gdisk_big_lab_folder +lab_name+'/'
     if not os.path.exists(path_s):
         return False
 
@@ -348,7 +349,7 @@ def check_student_BIG_lab_files(db_name, st_id, lab_id):
     return all_stu_files_loaded
 
 
-def check_new_loaded_BIG_labs(db_name, verbose=True):
+def check_new_loaded_BIG_labs(db_name, config, verbose=True):
     output = []
     for st_id in ST_ID_RANGE:
         #for lab_id in LABS_TO_CHECK:
@@ -358,7 +359,7 @@ def check_new_loaded_BIG_labs(db_name, verbose=True):
             lab_status = get_lab_status(db_name,st_id,lab_id)
             if lab_status in lab_status_values:
                 pass
-            elif lab_status == None and check_student_BIG_lab_files(db_name, st_id, lab_id):
+            elif lab_status == None and check_student_BIG_lab_files(db_name, st_id, lab_id, config):
                 set_lab_status(db_name, st_id, lab_id, 'Loaded')
                 if verbose:
                     print "Set status to 'Loaded' for lab %d student %d" % (lab_id, st_id)
@@ -367,21 +368,22 @@ def check_new_loaded_BIG_labs(db_name, verbose=True):
     return output
 
 
-def generate_report_for_loaded_BIG_labs(db_name,verbose=True):
+def generate_report_for_loaded_BIG_labs(db_name,config,verbose=True):
     loaded_labs = get_info_for_BIG_lab_status(db_name,'Loaded')
+    STUDENT_ID_FOLDER = config['STUDENT_ID_FOLDER']
     output = []
     for d in loaded_labs:
         st_id = d['st_id']
         lab_id = d['lab_id']
         lab_name = 'lab%03d' % (int(lab_id)-1000)
         st_gdisk_big_lab_folder = STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'
-        st_report_big_lab_path = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
+        st_report_big_lab_path = config['REPORT_PATH'] + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
 
         if not os.path.exists(st_report_big_lab_path):
             subprocess.call('mkdir -p '+st_report_big_lab_path, shell=True)
 
-        path_a_big = PATH_ANSWER_BIG_LAB + lab_name+'/'
-        path_s_big = PATH_STUDENT + st_gdisk_big_lab_folder + lab_name+'/'
+        path_a_big = config['PATH_ANSWER_BIG_LAB'] + lab_name+'/'
+        path_s_big = config['PATH_STUDENT'] + st_gdisk_big_lab_folder + lab_name+'/'
 
 
         lab_files = cfg_files_in_dir(path_a_big)
@@ -422,14 +424,14 @@ def set_task_number(db_name, lab_id, task_n):
     query_db(db_name, query)
 
 
-def check_lab_config_files(db_name, lab_id):
+def check_lab_config_files(db_name, lab_id, config):
     """
     """
     lab_name = 'lab%03d' % int(lab_id)
     task_n = get_task_number(db_name,lab_id)
-    if not os.path.exists(PATH_INITIAL + lab_name+'/'):
+    if not os.path.exists(config['PATH_INITIAL'] + lab_name+'/'):
         return False
-    initial_task_n = len([f for f in os.listdir(PATH_INITIAL + lab_name+'/') if f.startswith('task')])
+    initial_task_n = len([f for f in os.listdir(config['PATH_INITIAL'] + lab_name+'/') if f.startswith('task')])
     if initial_task_n == 0:
         return False
     else:
@@ -440,8 +442,8 @@ def check_lab_config_files(db_name, lab_id):
 
     for n in range(1,task_n+1):
         task = 'task' + str(n)
-        path_i = PATH_INITIAL + lab_name+'/' + task+'/'
-        path_a = PATH_ANSWER +  lab_name+'/' + task+'/'
+        path_i = config['PATH_INITIAL'] + lab_name+'/' + task+'/'
+        path_a = config['PATH_ANSWER'] +  lab_name+'/' + task+'/'
 
         if not os.path.exists(path_i) or not os.path.exists(path_a):
             return False
@@ -455,25 +457,25 @@ def check_lab_config_files(db_name, lab_id):
     return all_config_files_loaded
 
 
-def check_new_loaded_configs(db_name):
+def check_new_loaded_configs(db_name, config):
     """
     """
     for lab_id in xrange(1, 150):
         i_status, a_status = get_lab_configs_status(db_name, lab_id)
 
-        if check_lab_config_files(db_name, lab_id):
+        if check_lab_config_files(db_name, lab_id, config):
             set_lab_configs_status(db_name, lab_id, initial='Loaded', answer='Loaded')
             print "Set status to 'Loaded' for lab %d init and answer configs" % lab_id
 
 
-def return_cfg_files(db_name,lab_id,cfg):
+def return_cfg_files(db_name,lab_id,cfg,config):
     """
     """
     lab_name = 'lab%03d' % int(lab_id)
     if cfg == 'initial':
-        cfg_path = PATH_INITIAL + lab_name+'/'
+        cfg_path = config['PATH_INITIAL'] + lab_name+'/'
     elif cfg == 'answer':
-        cfg_path = PATH_ANSWER + lab_name+'/'
+        cfg_path = config['PATH_ANSWER'] + lab_name+'/'
 
     task_n = get_task_number(db_name,lab_id)
 
@@ -491,18 +493,18 @@ def return_cfg_files(db_name,lab_id,cfg):
     return files
 
 
-def check_BIG_lab_config_files(db_name, lab_id):
+def check_BIG_lab_config_files(db_name, lab_id, config):
     """
     """
     lab_name = 'lab%03d' % (int(lab_id)-1000)
 
-    if not os.path.exists(PATH_INITIAL_BIG_LAB+ lab_name+'/'):
+    if not os.path.exists(config['PATH_INITIAL_BIG_LAB']+ lab_name+'/'):
         return False
 
     all_config_files_loaded = True
 
-    path_i = PATH_INITIAL_BIG_LAB + lab_name+'/'
-    path_a = PATH_ANSWER_BIG_LAB +  lab_name+'/'
+    path_i = config['PATH_INITIAL_BIG_LAB'] + lab_name+'/'
+    path_a = config['PATH_ANSWER_BIG_LAB'] +  lab_name+'/'
 
     if not os.path.exists(path_i) or not os.path.exists(path_a):
         return False
@@ -519,7 +521,7 @@ def check_BIG_lab_config_files(db_name, lab_id):
     return all_config_files_loaded
 
 
-def check_new_loaded_configs_BIG(db_name):
+def check_new_loaded_configs_BIG(db_name, config):
     """
     """
     for lab_id in [1001, 1002]:
@@ -527,25 +529,26 @@ def check_new_loaded_configs_BIG(db_name):
 
         if i_status == 'Loaded' and a_status == 'Loaded':
             pass
-        elif check_BIG_lab_config_files(db_name, lab_id):
+        elif check_BIG_lab_config_files(db_name, lab_id, config):
             set_lab_configs_status(db_name, lab_id, initial='Loaded', answer='Loaded')
             print "Set status to 'Loaded' for lab %d init and answer configs" % lab_id
 
 
 ####### New func
-def check_labs_and_generate_reports(db_name):
-    generate_report_for_loaded_labs(db_name)
-    generate_report_for_loaded_BIG_labs(db_name)
-    check_new_loaded_labs(db_name)
-    check_new_loaded_BIG_labs(db_name)
+def check_labs_and_generate_reports(db_name, config):
+    generate_report_for_loaded_labs(db_name, config)
+    generate_report_for_loaded_BIG_labs(db_name, config)
+    check_new_loaded_labs(db_name, config)
+    check_new_loaded_BIG_labs(db_name, config)
 
 
-def generate_dict_report_content(st_id, lab_id):
+def generate_dict_report_content(st_id, lab_id, config):
     diff_report = odict()
+    STUDENT_ID_FOLDER = config['STUDENT_ID_FOLDER']
 
     if lab_id < 1000:
         lab_name = 'lab%03d' % int(lab_id)
-        ST_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
+        ST_REPORT_PATH = config['REPORT_PATH'] + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
         report_files = sorted([f for f in os.listdir(ST_REPORT_PATH) if f.startswith('report')])
 
         for f in report_files:
@@ -553,7 +556,7 @@ def generate_dict_report_content(st_id, lab_id):
                 diff_report[f.split('_')[-1].split('.')[0]] = report_f.readlines()
     else:
         lab_name = 'lab%03d' % (int(lab_id)-1000)
-        ST_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
+        ST_REPORT_PATH = config['REPORT_PATH'] + STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'+lab_name+'/'
         report_files = sorted([f for f in os.listdir(ST_REPORT_PATH) if f.startswith('report')])
 
         for f in report_files:
@@ -563,7 +566,10 @@ def generate_dict_report_content(st_id, lab_id):
     return diff_report
 
 
-def return_report_content(st_id, lab_id, task):
+def return_report_content(st_id, lab_id, task, config):
+    REPORT_PATH = config['REPORT_PATH']
+    STUDENT_ID_FOLDER = config['STUDENT_ID_FOLDER']
+
     if lab_id < 1000:
         lab_name = 'lab%03d' % int(lab_id)
         ST_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'

@@ -4,7 +4,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
-from flask import render_template, redirect, url_for, request
+from flask import render_template, redirect, url_for, request, g, session
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from ..models import User
 from . import main
@@ -24,6 +24,11 @@ from operator import itemgetter
 from collections import OrderedDict as odict
 
 
+@main.before_request
+def before_request():
+    if not session.get('config'):
+        session.config = current_app.config
+
 
 @main.route('/')
 def index():
@@ -34,7 +39,7 @@ def index():
 @main.route('/labs', methods=['GET', 'POST'])
 @login_required
 def labs():
-    check_labs_and_generate_reports(current_app.config['DB'])
+    check_labs_and_generate_reports(current_app.config['DB'], current_app.config)
 
     labs = get_all_loaded_labs(current_app.config['DB'])
     print current_user
@@ -77,7 +82,7 @@ def report(id):
 
         return redirect(url_for('main.labs'))
 
-    diff_report = generate_dict_report_content(st_id, lab_id)
+    diff_report = generate_dict_report_content(st_id, lab_id, current_app.config)
     student = get_student_name(DB, st_id)
     print student
 
@@ -100,7 +105,7 @@ def edit_report(id):
     form = EditReportForm()
     student = get_student_name(current_app.config['DB'], st_id)
 
-    report_fname, report = return_report_content(st_id, lab_id, task)
+    report_fname, report = return_report_content(st_id, lab_id, taski, current_app.config)
     form.report.data = report
 
     if form.validate_on_submit():
@@ -125,7 +130,7 @@ def lab_info():
 @login_required
 def lab_initial(lab_id):
 
-    files = return_cfg_files(current_app.config['DB'],lab_id, 'initial')
+    files = return_cfg_files(current_app.config['DB'],lab_id, 'initial', current_app.config)
     return render_template('lab_initial.html', lab=lab_id, files=files)
 
 
@@ -133,7 +138,7 @@ def lab_initial(lab_id):
 @login_required
 def lab_answer(lab_id):
 
-    files = return_cfg_files(current_app.config['DB'], lab_id, 'answer')
+    files = return_cfg_files(current_app.config['DB'], lab_id, 'answer', current_app.config)
     return render_template('lab_answer.html', lab=lab_id, files=files)
 
 
@@ -142,7 +147,7 @@ def lab_answer(lab_id):
 @login_required
 def config_report(lab_id):
 
-    diff_report = get_config_diff_report(current_app.config['DB'], lab_id)
+    diff_report = get_config_diff_report(current_app.config['DB'], lab_id, current_app.config)
     return render_template('config_report.html', lab=lab_id, diff=diff_report)
 
 
