@@ -12,7 +12,7 @@ from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCh
 
 from ..scripts.gdrive.sync_gdrive import sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time
 
-from ..scripts.helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_config_diff_report, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert
+from ..scripts.helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert
 #from ..scripts.send_mail import send_mail_with_reports
 
 from flask import current_app
@@ -27,7 +27,6 @@ from collections import OrderedDict as odict
 
 @main.route('/')
 def index():
-    print current_app.config
 
     return render_template('index.html')
 
@@ -35,7 +34,7 @@ def index():
 @main.route('/labs', methods=['GET', 'POST'])
 @login_required
 def labs():
-    check_labs_and_generate_reports()
+    check_labs_and_generate_reports(current_app.config['DB'])
 
     labs = get_all_loaded_labs(current_app.config['DB'])
     print current_user
@@ -118,7 +117,7 @@ def edit_report(id):
 @login_required
 def lab_info():
 
-    labs = get_all_for_loaded_configs()
+    labs = get_all_for_loaded_configs(current_app.config['DB'])
     return render_template('lab_info.html', lab_count = len(labs), labs=labs)
 
 
@@ -126,7 +125,7 @@ def lab_info():
 @login_required
 def lab_initial(lab_id):
 
-    files = return_cfg_files(lab_id, 'initial')
+    files = return_cfg_files(current_app.config['DB'],lab_id, 'initial')
     return render_template('lab_initial.html', lab=lab_id, files=files)
 
 
@@ -134,7 +133,7 @@ def lab_initial(lab_id):
 @login_required
 def lab_answer(lab_id):
 
-    files = return_cfg_files(lab_id, 'answer')
+    files = return_cfg_files(current_app.config['DB'], lab_id, 'answer')
     return render_template('lab_answer.html', lab=lab_id, files=files)
 
 
@@ -143,7 +142,7 @@ def lab_answer(lab_id):
 @login_required
 def config_report(lab_id):
 
-    diff_report = get_config_diff_report(lab_id)
+    diff_report = get_config_diff_report(current_app.config['DB'], lab_id)
     return render_template('config_report.html', lab=lab_id, diff=diff_report)
 
 

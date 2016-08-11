@@ -1,5 +1,5 @@
 from diff_report import generateLabReport
-from ..settings import DB, PATH_ANSWER, PATH_STUDENT, REPORT_PATH, LABS_TO_CHECK, ST_ID_RANGE, STUDENT_ID_FOLDER, LAB_ID_RANGE
+from ..settings import PATH_ANSWER, PATH_STUDENT, REPORT_PATH, LABS_TO_CHECK, ST_ID_RANGE, STUDENT_ID_FOLDER, LAB_ID_RANGE
 from general_func import query_db, query_db_ret_list_of_dict, cfg_files_in_dir
 
 import datetime
@@ -25,7 +25,7 @@ def get_all_labs_checked_by_expert(db_name, expert):
 
     return result
 
-def get_config_diff_report(lab_n):
+def get_config_diff_report(db_name, lab_n):
     """
     """
     diff_report = odict()
@@ -43,7 +43,7 @@ def get_config_diff_report(lab_n):
 
     else:
         lab = 'lab%03d' % int(lab_n)
-        task_n = get_task_number(DB,lab_n)
+        task_n = get_task_number(db_name,lab_n)
 
         for n in range(1,task_n+1):
             task = 'task' + str(n)
@@ -176,7 +176,7 @@ def get_lab_status(db_name, st_id, lab_id):
     return status
 
 
-def get_info_for_lab_status(status, all_labs=False):
+def get_info_for_lab_status(db_name, status, all_labs=False):
     """
     """
     if all_labs:
@@ -184,14 +184,14 @@ def get_info_for_lab_status(status, all_labs=False):
     else:
         query = "select st_id, lab_id from results where status = ? and lab_id < 1000"
 
-    result = query_db_ret_list_of_dict(DB, query, ['lab_id','st_id'], args=(status,))
+    result = query_db_ret_list_of_dict(db_name, query, ['lab_id','st_id'], args=(status,))
     return result
 
 
-def get_info_for_BIG_lab_status(status):
+def get_info_for_BIG_lab_status(db_name, status):
     query = "select st_id, lab_id from results where status = ? and lab_id > 1000"
 
-    result = query_db_ret_list_of_dict(DB, query, ['lab_id','st_id'], args=(status,))
+    result = query_db_ret_list_of_dict(db_name, query, ['lab_id','st_id'], args=(status,))
     return result
 
 
@@ -203,12 +203,12 @@ def get_lab_configs_status(db_name, lab_id):
     return initial, answer
 
 
-def get_all_for_loaded_configs(i_status='Loaded', a_status='Loaded'):
+def get_all_for_loaded_configs(db_name, i_status='Loaded', a_status='Loaded'):
     """
     """
     query = "select * from labs where init_config = ? and answer_config = ?"
     keys = ['lab_id', 'lab_desc', 'task_number', 'init_config', 'answer_config']
-    result = query_db_ret_list_of_dict(DB, query, keys, args=(i_status,a_status))
+    result = query_db_ret_list_of_dict(db_name, query, keys, args=(i_status,a_status))
     return result
 
 
@@ -267,7 +267,7 @@ def check_student_lab_files(db_name, st_id, lab_id):
     return all_stu_files_loaded
 
 
-def check_new_loaded_labs(verbose=True):
+def check_new_loaded_labs(db_name,verbose=True):
     """
     """
     output = []
@@ -277,11 +277,11 @@ def check_new_loaded_labs(verbose=True):
         #for lab_id in LABS_TO_CHECK:
         for lab_id in range_labs:
             lab_status_values = ['Failed', 'Done', 'ReportGenerated', 'Sended(Done)']
-            lab_status = get_lab_status(DB,st_id,lab_id)
+            lab_status = get_lab_status(db_name,st_id,lab_id)
             if lab_status in lab_status_values:
                 pass
-            elif not lab_status and check_student_lab_files(DB, st_id, lab_id):
-                set_lab_status(DB, st_id, lab_id, 'Loaded')
+            elif not lab_status and check_student_lab_files(db_name, st_id, lab_id):
+                set_lab_status(db_name, st_id, lab_id, 'Loaded')
                 if verbose:
                     print "Set status to 'Loaded' for lab %d student %d" % (lab_id, st_id)
                 else:
@@ -289,17 +289,17 @@ def check_new_loaded_labs(verbose=True):
     return output
 
 
-def generate_report_for_loaded_labs(verbose=True):
+def generate_report_for_loaded_labs(db_name, verbose=True):
     """
     """
-    loaded_labs = get_info_for_lab_status('Loaded')
+    loaded_labs = get_info_for_lab_status(db_name, 'Loaded')
     output = []
     for d in loaded_labs:
         st_id = d['st_id']
         lab_id = d['lab_id']
         print st_id, lab_id
         lab_name = 'lab%03d' % int(lab_id)
-        task_n = get_task_number(DB,lab_id)
+        task_n = get_task_number(db_name,lab_id)
         st_gdisk_folder = STUDENT_ID_FOLDER[st_id]+'/'+'labs/'
         st_REPORT_PATH = REPORT_PATH + STUDENT_ID_FOLDER[st_id]+'/'+'labs/'+lab_name+'/'
         if not os.path.exists(st_REPORT_PATH):
@@ -323,8 +323,8 @@ def generate_report_for_loaded_labs(verbose=True):
                 print "Generate report for", STUDENT_ID_FOLDER[st_id], lab_name, task
             else:
                 output.append("Generate report for", STUDENT_ID_FOLDER[st_id], lab_name, task)
-        set_lab_status(DB, st_id, lab_id, 'ReportGenerated')
-        set_diff_percent(DB, st_id, lab_id, ','.join(tasks_percent))
+        set_lab_status(db_name, st_id, lab_id, 'ReportGenerated')
+        set_diff_percent(db_name, st_id, lab_id, ','.join(tasks_percent))
     return output
 
 
@@ -348,18 +348,18 @@ def check_student_BIG_lab_files(db_name, st_id, lab_id):
     return all_stu_files_loaded
 
 
-def check_new_loaded_BIG_labs(verbose=True):
+def check_new_loaded_BIG_labs(db_name, verbose=True):
     output = []
     for st_id in ST_ID_RANGE:
         #for lab_id in LABS_TO_CHECK:
         for lab_id in [1001, 1002]:
             #print st_id, lab_id
             lab_status_values = ['Failed', 'Done', 'ReportGenerated', 'Sended(Done)']
-            lab_status = get_lab_status(DB,st_id,lab_id)
+            lab_status = get_lab_status(db_name,st_id,lab_id)
             if lab_status in lab_status_values:
                 pass
-            elif lab_status == None and check_student_BIG_lab_files(DB, st_id, lab_id):
-                set_lab_status(DB, st_id, lab_id, 'Loaded')
+            elif lab_status == None and check_student_BIG_lab_files(db_name, st_id, lab_id):
+                set_lab_status(db_name, st_id, lab_id, 'Loaded')
                 if verbose:
                     print "Set status to 'Loaded' for lab %d student %d" % (lab_id, st_id)
                 else:
@@ -367,8 +367,8 @@ def check_new_loaded_BIG_labs(verbose=True):
     return output
 
 
-def generate_report_for_loaded_BIG_labs(verbose=True):
-    loaded_labs = get_info_for_BIG_lab_status('Loaded')
+def generate_report_for_loaded_BIG_labs(db_name,verbose=True):
+    loaded_labs = get_info_for_BIG_lab_status(db_name,'Loaded')
     output = []
     for d in loaded_labs:
         st_id = d['st_id']
@@ -396,7 +396,7 @@ def generate_report_for_loaded_BIG_labs(verbose=True):
         else:
             output.append("Generate report for", STUDENT_ID_FOLDER[st_id], lab_name)
 
-        set_lab_status(DB, st_id, lab_id, 'ReportGenerated')
+        set_lab_status(db_name, st_id, lab_id, 'ReportGenerated')
     return output
 
 
@@ -455,18 +455,18 @@ def check_lab_config_files(db_name, lab_id):
     return all_config_files_loaded
 
 
-def check_new_loaded_configs():
+def check_new_loaded_configs(db_name):
     """
     """
     for lab_id in xrange(1, 150):
-        i_status, a_status = get_lab_configs_status(DB, lab_id)
+        i_status, a_status = get_lab_configs_status(db_name, lab_id)
 
-        if check_lab_config_files(DB, lab_id):
-            set_lab_configs_status(DB, lab_id, initial='Loaded', answer='Loaded')
+        if check_lab_config_files(db_name, lab_id):
+            set_lab_configs_status(db_name, lab_id, initial='Loaded', answer='Loaded')
             print "Set status to 'Loaded' for lab %d init and answer configs" % lab_id
 
 
-def return_cfg_files(lab_id,cfg):
+def return_cfg_files(db_name,lab_id,cfg):
     """
     """
     lab_name = 'lab%03d' % int(lab_id)
@@ -475,7 +475,7 @@ def return_cfg_files(lab_id,cfg):
     elif cfg == 'answer':
         cfg_path = PATH_ANSWER + lab_name+'/'
 
-    task_n = get_task_number(DB,lab_id)
+    task_n = get_task_number(db_name,lab_id)
 
     files = odict()
     for n in range(1,task_n+1):
@@ -519,25 +519,25 @@ def check_BIG_lab_config_files(db_name, lab_id):
     return all_config_files_loaded
 
 
-def check_new_loaded_configs_BIG():
+def check_new_loaded_configs_BIG(db_name):
     """
     """
     for lab_id in [1001, 1002]:
-        i_status, a_status = get_lab_configs_status(DB, lab_id)
+        i_status, a_status = get_lab_configs_status(db_name, lab_id)
 
         if i_status == 'Loaded' and a_status == 'Loaded':
             pass
-        elif check_BIG_lab_config_files(DB, lab_id):
-            set_lab_configs_status(DB, lab_id, initial='Loaded', answer='Loaded')
+        elif check_BIG_lab_config_files(db_name, lab_id):
+            set_lab_configs_status(db_name, lab_id, initial='Loaded', answer='Loaded')
             print "Set status to 'Loaded' for lab %d init and answer configs" % lab_id
 
 
 ####### New func
-def check_labs_and_generate_reports():
-    generate_report_for_loaded_labs()
-    generate_report_for_loaded_BIG_labs()
-    check_new_loaded_labs()
-    check_new_loaded_BIG_labs()
+def check_labs_and_generate_reports(db_name):
+    generate_report_for_loaded_labs(db_name)
+    generate_report_for_loaded_BIG_labs(db_name)
+    check_new_loaded_labs(db_name)
+    check_new_loaded_BIG_labs(db_name)
 
 
 def generate_dict_report_content(st_id, lab_id):

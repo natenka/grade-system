@@ -55,7 +55,7 @@ def send_mail_to_all_students(message):
         print email
 
 def send_mail_with_reports():
-    done_labs = get_info_for_lab_status('Done', all_labs=True)
+    done_labs = get_info_for_lab_status(db_name, 'Done', all_labs=True)
 
     for d in done_labs:
         st_id = d['st_id']
