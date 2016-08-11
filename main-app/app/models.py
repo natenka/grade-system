@@ -2,6 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db, lm
 from flask.ext.login import UserMixin
 
+lm.login_view = 'main.login'
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'

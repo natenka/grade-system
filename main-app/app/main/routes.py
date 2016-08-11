@@ -15,8 +15,7 @@ from ..scripts.gdrive.sync_gdrive import sync, configs_folder_id, students_folde
 from ..scripts.helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_config_diff_report, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert
 #from ..scripts.send_mail import send_mail_with_reports
 
-from ..settings import DB, REPORT_PATH, STUDENT_ID_FOLDER
-
+from flask import current_app
 
 import os
 import subprocess
@@ -24,8 +23,12 @@ import datetime
 from operator import itemgetter
 from collections import OrderedDict as odict
 
+
+
 @main.route('/')
 def index():
+    print current_app.config
+
     return render_template('index.html')
 
 
@@ -34,7 +37,7 @@ def index():
 def labs():
     check_labs_and_generate_reports()
 
-    labs = get_all_loaded_labs(DB)
+    labs = get_all_loaded_labs(current_app.config['DB'])
     print current_user
     return render_template('labs.html', lab_count = len(labs), labs=labs)
 
@@ -49,7 +52,7 @@ def checked_labs():
         lab_id = (request.form['select_lab_id'])
 
         return redirect(url_for('main.report', id = lab_id+'_'+st_id))
-    checked_lab_cur_expert = get_all_labs_checked_by_expert(DB, str(current_user))
+    checked_lab_cur_expert = get_all_labs_checked_by_expert(current_app.config['DB'], str(current_user))
 
     return render_template('checked_labs.html', checked_labs=checked_lab_cur_expert, form=form)
 
@@ -61,7 +64,7 @@ def report(id):
     today_data = str(datetime.datetime.utcnow().__str__().split('.')[0])
 
     form = LabForm()
-
+    DB = current_app.config['DB']
     #Prefill comment and mark for checked lab
     cur_comment, _, cur_mark = get_comment_email_mark_from_db(DB, st_id, lab_id)
     form.comment.data = cur_comment
@@ -96,7 +99,7 @@ def edit_report(id):
         lab_id, st_id, _, __ = [int(i) for i in str(id).split('_')]
 
     form = EditReportForm()
-    student = get_student_name(DB, st_id)
+    student = get_student_name(current_app.config['DB'], st_id)
 
     report_fname, report = return_report_content(st_id, lab_id, task)
     form.report.data = report
@@ -147,7 +150,7 @@ def config_report(lab_id):
 @main.route('/stats')
 @login_required
 def stats():
-    results = get_results_web(DB)
+    results = get_results_web(current_app.config['DB'])
     results_by_sum_of_mark = sorted(results, key=itemgetter('total_marks'), reverse=True)
 
     return render_template('stats.html', results=results_by_sum_of_mark[:10])
@@ -156,7 +159,7 @@ def stats():
 @main.route('/best')
 @login_required
 def best():
-    results = get_results_web(DB)
+    results = get_results_web(current_app.config['DB'])
     results_by_sum_of_mark = sorted(results, key=itemgetter('total_marks'), reverse=True)
     for i,v in enumerate(results_by_sum_of_mark, 1):
         v['place'] = i
@@ -167,7 +170,7 @@ def best():
 @main.route('/best_rating')
 @login_required
 def best_rating():
-    results = get_results_web(DB, all_st=False)
+    results = get_results_web(current_app.config['DB'], all_st=False)
     results_by_sum_of_mark = sorted(results, key=itemgetter('total_marks'), reverse=True)
     for i,v in enumerate(results_by_sum_of_mark, 1):
         v['place'] = i
@@ -178,14 +181,14 @@ def best_rating():
 @main.route('/lab_stats')
 @login_required
 def lab_stats():
-    lab_stats = get_lab_stats_web(DB)
+    lab_stats = get_lab_stats_web(current_app.config['DB'])
 
     return render_template('lab_stats.html', lab_stats=lab_stats)
 
 @main.route('/lab_debts')
 @login_required
 def lab_debts():
-    st_not_done_lab = get_st_list_not_done_lab(DB)
+    st_not_done_lab = get_st_list_not_done_lab(current_app.config['DB'])
 
     return render_template('lab_debts.html', st_not_done_lab=st_not_done_lab)
 
@@ -193,7 +196,7 @@ def lab_debts():
 @main.route('/stu_stats')
 @login_required
 def stu_stats():
-    results = get_results_web(DB)
+    results = get_results_web(current_app.config['DB'])
 
     return render_template('stu_stats.html', results=results)
 
