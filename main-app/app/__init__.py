@@ -4,8 +4,10 @@ from flask.ext.bootstrap import Bootstrap
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
 from flask.ext.moment import Moment
+from config import config
 
 bootstrap = Bootstrap()
+moment = Moment()
 db = SQLAlchemy()
 lm = LoginManager()
 lm.login_view = 'main.login'
@@ -14,10 +16,12 @@ lm.login_view = 'main.login'
 def create_app(config_name):
     """Create an application instance."""
     app = Flask(__name__)
+    app.config.from_object(config[config_name])
+    config[config_name].init_app(app)
 
     # import configuration
-    cfg = os.path.join(os.getcwd(), 'config', config_name + '.py')
-    app.config.from_pyfile(cfg)
+    #cfg = os.path.join(os.getcwd(), 'config', config_name + '.py')
+    #app.config.from_pyfile(cfg)
     # http://stackoverflow.com/questions/33738467/sqlalchemy-who-needs-sqlalchemy-track-modifications
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -25,7 +29,7 @@ def create_app(config_name):
     bootstrap.init_app(app)
     db.init_app(app)
     lm.init_app(app)
-    moment = Moment(app)
+    moment.init_app(app)
 
     # import blueprints
     from .main import main as main_blueprint
