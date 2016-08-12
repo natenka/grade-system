@@ -11,7 +11,7 @@ from . import main
 from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCheckedLabs, SendMailToAllStudentsForm, EditReportForm, ShowReportForm
 
 
-from .main_helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports, sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time
+from .main_helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports, sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time, st_id_gdisk, LAB_ID_RANGE
 
 from flask import current_app
 
@@ -48,6 +48,10 @@ def labs():
 @login_required
 def checked_labs():
     form = ShowReportForm()
+    # Generate dynamic fields in form
+    STUDENT_ID_FOLDER = st_id_gdisk(current_app.config['DB'])
+    form.select_st_id.choices = [(str(i),j) for i,j in STUDENT_ID_FOLDER.items()]
+    form.select_lab_id.choices = zip([str(i) for i in LAB_ID_RANGE],["lab "+str(i) for i in LAB_ID_RANGE])
 
     if form.validate_on_submit():
         st_id = (request.form['select_st_id'])

@@ -1,14 +1,6 @@
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, TextAreaField, SubmitField, IntegerField, SelectField
-from wtforms.validators import Required, Length, NumberRange
-from .main_helpers import LAB_ID_RANGE
-
-
-#Temporary solution. Will be changed to dynamic form
-from .main_helpers import st_id_gdisk
-DB = '/Users/natasha/Programming/grade-system/main-app/grade_system_dev.sqlite'
-STUDENT_ID_FOLDER = st_id_gdisk(DB)
-
+from wtforms.validators import Required, Length
 
 
 class LoginForm(Form):
@@ -31,10 +23,8 @@ class EditReportForm(Form):
 
 
 class ShowReportForm(Form):
-    select_st_id = SelectField('Select ST ID',
-                               choices = [(str(i),j) for i,j in STUDENT_ID_FOLDER.items()])
-    select_lab_id = SelectField('Select Lab ID',
-                                choices = zip([str(i) for i in LAB_ID_RANGE],["lab "+str(i) for i in LAB_ID_RANGE]))
+    select_st_id = SelectField('Select ST ID', choices = [])
+    select_lab_id = SelectField('Select Lab ID', choices = [])
     open_report = SubmitField('Open report')
 
 
