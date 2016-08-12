@@ -1,9 +1,13 @@
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, TextAreaField, SubmitField, IntegerField, SelectField
 from wtforms.validators import Required, Length, NumberRange
-###################FIX
-from ..settings import STUDENT_ID_FOLDER
 from ..scripts.helpers import LAB_ID_RANGE
+
+
+#Temporary solution. Will be changed to dynamic form
+from ..scripts.helpers import st_id_gdisk
+DB = '/Users/natasha/Programming/grade-system/main-app/grade_system_dev.sqlite'
+STUDENT_ID_FOLDER = st_id_gdisk(DB)
 
 
 
