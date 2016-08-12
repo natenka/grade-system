@@ -7,6 +7,8 @@ from .helpers.lab_check_schedule import CHECK_LABS
 import datetime
 import sqlite3
 import os
+import sys
+import yaml
 import subprocess
 from collections import OrderedDict as odict
 from natsort import natsorted
@@ -18,7 +20,6 @@ from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
 from email import Encoders
-import os
 from .helpers.gmail_creds import gmail_user, gmail_pwd
 
 
@@ -731,3 +732,67 @@ def send_mail_with_reports(db_name, config):
 
         mail(email, text_header, text, files_to_attach)
         set_lab_status(db_name, st_id, lab_id, "Sended(Done)")
+
+
+###### SYNC Google Drive
+
+configs_folder_id = {
+'_labs_answer_expert_only': '0B3uwAH0p4u2Nam81UEUxNUlPRGc',
+'_initial_configs': '0B3uwAH0p4u2NcDR5bmpHdmZDRjA'}
+
+students_folder_id = {'_students_answer': '0B3uwAH0p4u2NVDBta09JTVlwN00'}
+
+def sync(folders, base_path):
+    for folder, fld_id in folders.items():
+        reply = subprocess.Popen(['python',
+            base_path+'app/main/helpers/gdrive/drive_backup.py',
+            '--drive_id', fld_id,
+            '--destination', base_path+'gdisk_ccie/'])
+
+
+def last_sync(base_path, configs_updated=False, students_updated=False):
+    file_content = {}
+    current_time = datetime.datetime.utcnow()
+    configs_upd_time = datetime.datetime(2016, 4, 1, 0, 0)
+    students_upd_time = datetime.datetime(2016, 4, 1, 0, 0)
+    last_sync_file = base_path + 'app/main/helpers/gdrive/last_sync.yml'
+
+    if os.path.exists(last_sync_file):
+        with open(last_sync_file, 'rw') as f:
+            file_content = yaml.load(f)
+            if file_content:
+                if 'configs_upd_time' in file_content:
+                    configs_upd_time = datetime.datetime.strptime(file_content['configs_upd_time'], '%Y-%m-%d %H:%M:%S.%f')
+                if 'students_upd_time' in file_content:
+                    students_upd_time = datetime.datetime.strptime(file_content['students_upd_time'], '%Y-%m-%d %H:%M:%S.%f')
+    if (current_time - configs_upd_time).seconds / 60 < 15:
+        configs_updated=True
+    if (current_time - students_upd_time).seconds / 60 < 60:
+        students_updated=True
+
+    return configs_updated, students_updated
+
+
+def set_last_sync(base_path, update_configs=False, update_students=False):
+    current_time = datetime.datetime.utcnow()
+    last_sync_file = base_path + 'app/main/helpers/gdrive/last_sync.yml'
+    with open(last_sync_file, 'r') as f:
+        file_content = yaml.load(f)
+        if not file_content:
+            file_content = {}
+        if update_configs:
+            file_content['configs_upd_time'] = current_time.__str__()
+        if update_students:
+            file_content['students_upd_time'] = current_time.__str__()
+    with open(last_sync_file, 'w') as f:
+        yaml.dump(file_content, f)
+
+
+def get_last_sync_time(base_path):
+    last_sync_file = base_path + 'app/main/helpers/gdrive/last_sync.yml'
+    with open(last_sync_file, 'r') as f:
+        file_content = yaml.load(f)
+        configs_upd_time = datetime.datetime.strptime(file_content['configs_upd_time'], '%Y-%m-%d %H:%M:%S.%f')
+        students_upd_time = datetime.datetime.strptime(file_content['students_upd_time'], '%Y-%m-%d %H:%M:%S.%f')
+
+    return configs_upd_time, students_upd_time

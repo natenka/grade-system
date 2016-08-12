@@ -9,9 +9,9 @@ class Config:
     FLASKY_MAIL_SENDER = 'Flasky Admin <flasky@example.com>'
     FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
 
-    PATH = os.path.abspath(os.path.dirname(__file__))+'/'
-    GD_PATH = PATH + ''
-    REPORT_PATH = PATH + 'reports/'
+    BASE_PATH = os.path.abspath(os.path.dirname(__file__))+'/'
+    GD_PATH = BASE_PATH + ''
+    REPORT_PATH = BASE_PATH + 'reports/'
 
     PATH_INITIAL = GD_PATH + '_initial_configs/labs/'
     PATH_ANSWER = GD_PATH + '_labs_answer_expert_only/labs/'
@@ -34,24 +34,24 @@ class DevelopmentConfig(Config):
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
-                    'sqlite:///' + os.path.join(Config.PATH, 'user_info.sqlite3')
+                    'sqlite:///' + os.path.join(Config.BASE_PATH, 'user_info.sqlite3')
 
-    DB = Config.PATH + 'grade_system_dev.sqlite'
+    DB = Config.BASE_PATH + 'grade_system_dev.sqlite'
     ST_ID_RANGE = range(1,15)
 
 
 class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
-            'sqlite:///' + os.path.join(Config.PATH, 'data-test.sqlite')
-    DB = Config.PATH + 'grade_system_test.sqlite'
+            'sqlite:///' + os.path.join(Config.BASE_PATH, 'data-test.sqlite')
+    DB = Config.BASE_PATH + 'grade_system_test.sqlite'
     ST_ID_RANGE = range(1,15)
 
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-                    'sqlite:///' + os.path.join(Config.PATH, 'user_info.sqlite3')
-    DB = Config.PATH + 'grade_system.sqlite'
+                    'sqlite:///' + os.path.join(Config.BASE_PATH, 'user_info.sqlite3')
+    DB = Config.BASE_PATH + 'grade_system.sqlite'
     ST_ID_RANGE = range(1,33)
 
 

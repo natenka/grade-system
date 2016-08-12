@@ -10,9 +10,8 @@ from ..models import User
 from . import main
 from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCheckedLabs, SendMailToAllStudentsForm, EditReportForm, ShowReportForm
 
-from .helpers.gdrive.sync_gdrive import sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time
 
-from .main_helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports
+from .main_helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports, sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time
 
 from flask import current_app
 
@@ -213,23 +212,23 @@ def manage():
     send_mail_to_all_form = SendMailToAllStudentsForm()
 
     if 'sync_config' in request.form.keys():
-        configs_updated, _ = last_sync()
+        configs_updated, _ = last_sync(current_app.config['BASE_PATH'])
         if not configs_updated:
-            sync(configs_folder_id)
-            set_last_sync(update_configs=True)
+            sync(configs_folder_id, current_app.config['BASE_PATH'])
+            set_last_sync(current_app.config['BASE_PATH'], update_configs=True)
             return redirect(url_for('main.manage'))
     if 'sync_students' in request.form.keys():
-        _, students_updated = last_sync()
+        _, students_updated = last_sync(current_app.config['BASE_PATH'])
         if not students_updated:
-            sync(students_folder_id)
-            set_last_sync(update_students=True)
+            sync(students_folder_id, current_app.config['BASE_PATH'])
+            set_last_sync(current_app.config['BASE_PATH'], update_students=True)
             return redirect(url_for('main.manage'))
 
     if 'confirm' in request.form.keys() and 'send' in request.form.keys():
         send_mail_with_reports(current_app.config['DB'], current_app.config)
         return redirect(url_for('main.manage'))
 
-    configs_upd_time, students_upd_time = get_last_sync_time()
+    configs_upd_time, students_upd_time = get_last_sync_time(current_app.config['BASE_PATH'])
 
     return render_template('manage.html', configs_upd_time=configs_upd_time, students_upd_time=students_upd_time,
             sync_gdrive=sync_gdrive_form, sync_stu_gdrive=sync_stu_gdrive_form,
