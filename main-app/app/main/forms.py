@@ -1,7 +1,9 @@
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, TextAreaField, SubmitField, IntegerField, SelectField
 from wtforms.validators import Required, Length, NumberRange
-from ..settings import ST_ID_RANGE, LAB_ID_RANGE, STUDENT_ID_FOLDER
+###################FIX
+from ..settings import STUDENT_ID_FOLDER
+from ..scripts.helpers import LAB_ID_RANGE
 
 
 

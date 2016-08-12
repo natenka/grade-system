@@ -1,12 +1,74 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 from diff_report import generateLabReport
-from ..settings import LABS_TO_CHECK, ST_ID_RANGE, LAB_ID_RANGE
-from general_func import query_db, query_db_ret_list_of_dict, cfg_files_in_dir
+from lab_check_schedule import CHECK_LABS
 
 import datetime
 import sqlite3
 import os
 import subprocess
 from collections import OrderedDict as odict
+from natsort import natsorted
+
+
+import getpass
+import smtplib
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEBase import MIMEBase
+from email.MIMEText import MIMEText
+from email import Encoders
+import os
+from gmail_creds import gmail_user, gmail_pwd
+
+
+today_data = datetime.date.today().__str__()
+LABS_TO_CHECK = CHECK_LABS[today_data]
+if not LABS_TO_CHECK:
+    LABS_TO_CHECK = CHECK_LABS[(datetime.date.today()+datetime.timedelta(days=2)).__str__()]
+
+
+LAB_ID_RANGE = range(1,max(LABS_TO_CHECK)+1) + [1001, 1002]
+absent_labs = [3,10,20]
+for lab in absent_labs:
+    LAB_ID_RANGE.remove(lab)
+
+
+def query_db(db_name, query, args=()):
+    with sqlite3.connect(db_name) as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, args)
+        result = cursor.fetchall()
+        if len(result) == 1:
+            result = result[0]
+        return result
+
+def query_db_ret_list_of_dict(db_name, query, keys, args=()):
+    with sqlite3.connect(db_name) as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute(query, args)
+        result = []
+        for row in cursor.fetchall():
+            di = {}
+            for k in keys:
+                di[k] = row[k]
+            result.append(di)
+        return result
+
+
+def st_id_gdisk(db_name):
+    query = "select st_id, gdrive_name from students"
+    result = query_db(db_name, query)
+    result = {int(i):j for i,j in result}
+    return result
+
+
+def cfg_files_in_dir(dir_name):
+    cfg_files = [
+        f for f in os.listdir(dir_name) if f.endswith('txt') and (f.startswith('r') or f.startswith('sw'))]
+    cfg_files = natsorted(cfg_files, key=lambda y: y.lower())
+    return cfg_files
 
 
 ### Get functions
@@ -85,11 +147,11 @@ def get_student_name(db_name, st_id):
     return name
 
 
-def get_results_web(db_name, all_st=True):
+def get_results_web(db_name, config, all_st=True):
     """
     """
     results = []
-    for st_id in ST_ID_RANGE:
+    for st_id in config['ST_ID_RANGE']:
         st_results = {}
         st_results['st_id'] = st_id
         st_results['student'] = get_student_name(db_name, st_id)
@@ -131,7 +193,7 @@ def get_lab_stats_web(db_name):
     return current_lab_results
 
 
-def get_st_list_not_done_lab(db_name):
+def get_st_list_not_done_lab(db_name, config):
     """
     """
     lab_dict = odict()
@@ -140,7 +202,7 @@ def get_st_list_not_done_lab(db_name):
     for lab_id in LAB_ID_RANGE:
         query = "select st_id from results where lab_id = ?"
         st_done = [st[0] for st in query_db(db_name, query, args=(lab_id,))]
-        lab_dict[lab_id] = ', '.join([str(st) for st in ST_ID_RANGE if not st in st_done])
+        lab_dict[lab_id] = ', '.join([str(st) for st in config['ST_ID_RANGE'] if not st in st_done])
 
     return lab_dict
 
@@ -246,9 +308,10 @@ def set_diff_percent(db_name, st_id, lab_id, percent):
 def check_student_lab_files(db_name, st_id, lab_id, config):
     """
     """
+    STUDENT_ID_FOLDER = st_id_gdisk(db_name)
     lab_name = 'lab%03d' % int(lab_id)
     task_n = get_task_number(db_name,lab_id)
-    st_gdisk_folder = config['STUDENT_ID_FOLDER'][st_id]+'/'+'labs/'
+    st_gdisk_folder = STUDENT_ID_FOLDER[st_id]+'/'+'labs/'
     all_stu_files_loaded = True
 
     for n in range(1,task_n+1):
@@ -271,10 +334,9 @@ def check_new_loaded_labs(db_name,config, verbose=True):
     """
     """
     output = []
-    range_labs = range(1,max(config['LABS_TO_CHECK'])+1)
+    range_labs = range(1,max(LABS_TO_CHECK)+1)
 
-    for st_id in ST_ID_RANGE:
-        #for lab_id in LABS_TO_CHECK:
+    for st_id in config['ST_ID_RANGE']:
         for lab_id in range_labs:
             lab_status_values = ['Failed', 'Done', 'ReportGenerated', 'Sended(Done)']
             lab_status = get_lab_status(db_name,st_id,lab_id)
@@ -292,7 +354,7 @@ def check_new_loaded_labs(db_name,config, verbose=True):
 def generate_report_for_loaded_labs(db_name, config, verbose=True):
     """
     """
-    STUDENT_ID_FOLDER = config['STUDENT_ID_FOLDER']
+    STUDENT_ID_FOLDER = st_id_gdisk(db_name)
     loaded_labs = get_info_for_lab_status(db_name, 'Loaded')
     output = []
     for d in loaded_labs:
@@ -332,7 +394,8 @@ def generate_report_for_loaded_labs(db_name, config, verbose=True):
 # BIG labs
 def check_student_BIG_lab_files(db_name, st_id, lab_id, config):
     lab_name = 'lab%03d' % (int(lab_id)-1000)
-    st_gdisk_big_lab_folder = config['STUDENT_ID_FOLDER'][st_id]+'/'+'big_labs/'
+    STUDENT_ID_FOLDER = st_id_gdisk(db_name)
+    st_gdisk_big_lab_folder = STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'
     all_stu_files_loaded = True
 
     path_a = config['PATH_ANSWER_BIG_LAB'] + lab_name+'/'
@@ -351,8 +414,7 @@ def check_student_BIG_lab_files(db_name, st_id, lab_id, config):
 
 def check_new_loaded_BIG_labs(db_name, config, verbose=True):
     output = []
-    for st_id in ST_ID_RANGE:
-        #for lab_id in LABS_TO_CHECK:
+    for st_id in config['ST_ID_RANGE']:
         for lab_id in [1001, 1002]:
             #print st_id, lab_id
             lab_status_values = ['Failed', 'Done', 'ReportGenerated', 'Sended(Done)']
@@ -370,7 +432,7 @@ def check_new_loaded_BIG_labs(db_name, config, verbose=True):
 
 def generate_report_for_loaded_BIG_labs(db_name,config,verbose=True):
     loaded_labs = get_info_for_BIG_lab_status(db_name,'Loaded')
-    STUDENT_ID_FOLDER = config['STUDENT_ID_FOLDER']
+    STUDENT_ID_FOLDER = st_id_gdisk(db_name)
     output = []
     for d in loaded_labs:
         st_id = d['st_id']
@@ -542,9 +604,9 @@ def check_labs_and_generate_reports(db_name, config):
     check_new_loaded_BIG_labs(db_name, config)
 
 
-def generate_dict_report_content(st_id, lab_id, config):
+def generate_dict_report_content(db_name, st_id, lab_id, config):
     diff_report = odict()
-    STUDENT_ID_FOLDER = config['STUDENT_ID_FOLDER']
+    STUDENT_ID_FOLDER = st_id_gdisk(db_name)
 
     if lab_id < 1000:
         lab_name = 'lab%03d' % int(lab_id)
@@ -568,7 +630,7 @@ def generate_dict_report_content(st_id, lab_id, config):
 
 def return_report_content(st_id, lab_id, task, config):
     REPORT_PATH = config['REPORT_PATH']
-    STUDENT_ID_FOLDER = config['STUDENT_ID_FOLDER']
+    STUDENT_ID_FOLDER = st_id_gdisk(db_name)
 
     if lab_id < 1000:
         lab_name = 'lab%03d' % int(lab_id)
@@ -583,3 +645,89 @@ def return_report_content(st_id, lab_id, task, config):
         report = report_f.read()
 
     return report_fname, report
+
+
+#Send mail func
+# Adapted from http://kutuma.blogspot.com/2007/08/sending-emails-via-gmail-with-python.html
+
+gmail_user = gmail_user
+gmail_pwd = gmail_pwd
+
+def login(user):
+    global gmail_user, gmail_pwd
+    gmail_user = user
+    gmail_pwd = getpass.getpass('Password for %s: ' % gmail_user)
+
+def mail(to, subject, text, attach=None):
+    msg = MIMEMultipart()
+    msg['From'] = gmail_user
+    msg['To'] = to
+    msg['Subject'] = subject
+    msg.attach(MIMEText(text))
+    if attach:
+        for f_attach in attach:
+            part = MIMEBase('application', 'octet-stream')
+            part.set_payload(open(f_attach, 'rb').read())
+            Encoders.encode_base64(part)
+            part.add_header('Content-Disposition', 'attachment; filename="%s"' % os.path.basename(f_attach))
+            msg.attach(part)
+    mailServer = smtplib.SMTP("smtp.gmail.com", 587)
+    mailServer.ehlo()
+    mailServer.starttls()
+    mailServer.ehlo()
+    mailServer.login(gmail_user, gmail_pwd)
+    mailServer.sendmail(gmail_user, to, msg.as_string())
+    mailServer.close()
+
+
+def send_mail_to_all_students(message):
+    all_emails = query_db(DB, "select st_email from students")
+
+    for e in all_emails:
+        email = e[0]
+        if len(email) > 3:
+            mail(email, "[Lab] Big Lab 2!", message)
+        print email
+
+def send_mail_with_reports(db_name, config):
+    done_labs = get_info_for_lab_status(db_name, 'Done', all_labs=True)
+    STUDENT_ID_FOLDER = st_id_gdisk(db_name)
+    REPORT_PATH = config['REPORT_PATH']
+
+    for d in done_labs:
+        st_id = d['st_id']
+        lab_id = d['lab_id']
+        if int(lab_id) > 1000:
+            lab_name = 'lab%03d' % (int(lab_id) - 1000)
+            st_gdisk_folder = STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'
+            st_REPORT_PATH = REPORT_PATH+ st_gdisk_folder +lab_name+'/'
+            files_to_attach = []
+            fname = st_REPORT_PATH+'report_for_big_%s.txt' % lab_name
+            files_to_attach.append(fname)
+
+            text_header = "[Lab] Big Lab %d is Done. Good Job!" % (int(lab_id) - 1000)
+        else:
+            lab_name = 'lab%03d' % int(lab_id)
+            task_n = get_task_number(db_name,lab_id)
+            st_gdisk_folder = STUDENT_ID_FOLDER[st_id]+'/'+'labs/'
+            st_REPORT_PATH = REPORT_PATH+ st_gdisk_folder +lab_name+'/'
+
+            files_to_attach = []
+            for n in range(1,task_n+1):
+                task = 'task' + str(n)
+                fname = st_REPORT_PATH+'report_for_%s_%s.txt' % (lab_name, task)
+                files_to_attach.append(fname)
+
+            text_header = "[Lab] Lab %s is Done. Good Job!" % lab_id
+
+        print STUDENT_ID_FOLDER[st_id], lab_name
+        comment, email, mark = get_comment_email_mark_from_db(db_name, st_id, lab_id)
+        if not comment:
+            comment = ''
+        mark_text = u"\n\nБаллы за лабораторную: " + str(mark)
+
+        text = comment + mark_text
+        text = text.encode('utf-8')
+
+        mail(email, text_header, text, files_to_attach)
+        set_lab_status(db_name, st_id, lab_id, "Sended(Done)")

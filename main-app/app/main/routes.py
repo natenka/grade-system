@@ -12,8 +12,7 @@ from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCh
 
 from ..scripts.gdrive.sync_gdrive import sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time
 
-from ..scripts.helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert
-#from ..scripts.send_mail import send_mail_with_reports
+from ..scripts.helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports
 
 from flask import current_app
 
@@ -82,7 +81,7 @@ def report(id):
 
         return redirect(url_for('main.labs'))
 
-    diff_report = generate_dict_report_content(st_id, lab_id, current_app.config)
+    diff_report = generate_dict_report_content(DB, st_id, lab_id, current_app.config)
     student = get_student_name(DB, st_id)
     print student
 
@@ -154,7 +153,7 @@ def config_report(lab_id):
 @main.route('/stats')
 @login_required
 def stats():
-    results = get_results_web(current_app.config['DB'])
+    results = get_results_web(current_app.config['DB'], current_app.config)
     results_by_sum_of_mark = sorted(results, key=itemgetter('total_marks'), reverse=True)
 
     return render_template('stats.html', results=results_by_sum_of_mark[:10])
@@ -163,7 +162,7 @@ def stats():
 @main.route('/best')
 @login_required
 def best():
-    results = get_results_web(current_app.config['DB'])
+    results = get_results_web(current_app.config['DB'], current_app.config)
     results_by_sum_of_mark = sorted(results, key=itemgetter('total_marks'), reverse=True)
     for i,v in enumerate(results_by_sum_of_mark, 1):
         v['place'] = i
@@ -174,7 +173,7 @@ def best():
 @main.route('/best_rating')
 @login_required
 def best_rating():
-    results = get_results_web(current_app.config['DB'], all_st=False)
+    results = get_results_web(current_app.config['DB'], current_app.config, all_st=False)
     results_by_sum_of_mark = sorted(results, key=itemgetter('total_marks'), reverse=True)
     for i,v in enumerate(results_by_sum_of_mark, 1):
         v['place'] = i
@@ -192,7 +191,7 @@ def lab_stats():
 @main.route('/lab_debts')
 @login_required
 def lab_debts():
-    st_not_done_lab = get_st_list_not_done_lab(current_app.config['DB'])
+    st_not_done_lab = get_st_list_not_done_lab(current_app.config['DB'], current_app.config)
 
     return render_template('lab_debts.html', st_not_done_lab=st_not_done_lab)
 
@@ -200,7 +199,7 @@ def lab_debts():
 @main.route('/stu_stats')
 @login_required
 def stu_stats():
-    results = get_results_web(current_app.config['DB'])
+    results = get_results_web(current_app.config['DB'], current_app.config)
 
     return render_template('stu_stats.html', results=results)
 
@@ -227,7 +226,7 @@ def manage():
             return redirect(url_for('main.manage'))
 
     if 'confirm' in request.form.keys() and 'send' in request.form.keys():
-        send_mail_with_reports()
+        send_mail_with_reports(current_app.config['DB'], current_app.config)
         return redirect(url_for('main.manage'))
 
     configs_upd_time, students_upd_time = get_last_sync_time()

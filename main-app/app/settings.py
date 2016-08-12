@@ -2,7 +2,7 @@ import os
 import datetime
 
 from scripts.lab_check_schedule import CHECK_LABS
-from scripts.general_func import st_id_gdisk
+from scripts.helpers import st_id_gdisk
 
 
 # Path variables
