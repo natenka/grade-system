@@ -10,9 +10,9 @@ from ..models import User
 from . import main
 from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCheckedLabs, SendMailToAllStudentsForm, EditReportForm, ShowReportForm
 
-from ..scripts.gdrive.sync_gdrive import sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time
+from .helpers.gdrive.sync_gdrive import sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time
 
-from ..scripts.helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports
+from .main_helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports
 
 from flask import current_app
 

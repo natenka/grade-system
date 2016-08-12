@@ -19,10 +19,6 @@ def sync(folders):
             '/home/nata/grade_system/main_app/app/scripts/gdrive/drive_backup.py',
             '--drive_id', fld_id,
             '--destination', '/home/nata/grade_system/main_app/gdisk_ccie/'])
-        #if reply == 0:
-        #    print "Folder %s is in sync" % folder
-        #else:
-        #    print "Error in sync for folder " % folder
 
 
 def last_sync(configs_updated=False, students_updated=False):
@@ -69,9 +65,3 @@ def get_last_sync_time():
 
     return configs_upd_time, students_upd_time
 
-
-if __name__ == '__main__':
-    sync(configs_folder_id)
-
-    if len(sys.argv) > 1:
-        sync(students_folder_id)

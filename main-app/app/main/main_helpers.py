@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from diff_report import generateLabReport
-from lab_check_schedule import CHECK_LABS
+from .helpers.diff_report import generateLabReport
+from .helpers.lab_check_schedule import CHECK_LABS
 
 import datetime
 import sqlite3
@@ -19,7 +19,7 @@ from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
 from email import Encoders
 import os
-from gmail_creds import gmail_user, gmail_pwd
+from .helpers.gmail_creds import gmail_user, gmail_pwd
 
 
 today_data = datetime.date.today().__str__()
