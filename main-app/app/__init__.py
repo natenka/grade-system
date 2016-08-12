@@ -16,12 +16,10 @@ lm.login_view = 'main.login'
 def create_app(config_name):
     """Create an application instance."""
     app = Flask(__name__)
+    # import configuration
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
-    # import configuration
-    #cfg = os.path.join(os.getcwd(), 'config', config_name + '.py')
-    #app.config.from_pyfile(cfg)
     # http://stackoverflow.com/questions/33738467/sqlalchemy-who-needs-sqlalchemy-track-modifications
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 

@@ -156,10 +156,12 @@ def get_results_web(db_name, config, all_st=True):
         st_results = {}
         st_results['st_id'] = st_id
         st_results['student'] = get_student_name(db_name, st_id)
-        query = "select lab_id from results where st_id = ? and (status = 'Sended(Done)' or status = 'Done') and lab_id != 1001"
+        query = """select lab_id from results
+                   where st_id = ? and (status = 'Sended(Done)' or status = 'Done') and lab_id != 1001;"""
         st_results['total_labs'] = len(query_db(db_name, query, args=(st_id,)))
 
-        query = "select mark from results where st_id = ? and (status = 'Sended(Done)' or status = 'Done') and lab_id != 1001"
+        query = """select mark from results
+                   where st_id = ? and (status = 'Sended(Done)' or status = 'Done') and lab_id != 1001;"""
         all_marks = query_db(db_name, query, args=(st_id,))
         st_results['total_marks'] = sum([int(i[0]) for i in all_marks if i[0]])
 
@@ -211,7 +213,8 @@ def get_st_list_not_done_lab(db_name, config):
 def get_comment_email_mark_from_db(db_name, st_id, lab_id):
     """
     """
-    query = "select comments, st_email, mark from results, students where lab_id = ? and results.st_id = ? and results.st_id = students.st_id"
+    query = """select comments, st_email, mark from results, students
+             where lab_id = ? and results.st_id = ? and results.st_id = students.st_id;"""
     result = query_db(db_name, query, (lab_id, st_id))
     if len(result) == 3:
         comment, email, mark = result
@@ -283,7 +286,8 @@ def set_lab_check_results(db_name, st_id, lab_id, status, comment, mark, expert,
     for specified st_id and lab_id
     """
 
-    query = '''update results set status = '%s', comments = '%s', mark = '%s', expert = '%s', check_time = '%s' where st_id = ? and lab_id = ?''' % (status, comment, mark, expert, today_data)
+    query = '''update results set status = '%s', comments = '%s', mark = '%s', expert = '%s', check_time = '%s'
+               where st_id = ? and lab_id = ?;''' % (status, comment, mark, expert, today_data)
 
     query_db(db_name, query, args=(st_id, lab_id))
 

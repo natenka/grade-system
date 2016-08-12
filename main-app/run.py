@@ -12,12 +12,3 @@ if __name__ == '__main__':
                        required=False, default=config['development'])
     #manager.add_command("test", commands.Test())
     manager.run()
-
-
-    #app = create_app('development')
-    #with app.app_context():
-    #    db.create_all()
-    #    if User.query.filter_by(username='user').first() is None:
-    #        User.register('user', 'userpass')
-    #app.debug = True
-    #app.run(port=9090)

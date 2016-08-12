@@ -6,6 +6,7 @@ from wtforms.validators import Required, Length
 class LoginForm(Form):
     username = StringField('Username', validators=[Required(), Length(1, 16)])
     password = PasswordField('Password', validators=[Required()])
+    # Add 'remember me' function
     remember_me = BooleanField('Remember me')
     submit = SubmitField('Submit')
 
@@ -36,7 +37,7 @@ class SyncStuGdriveForm(Form):
     sync_students = SubmitField('Sync Students')
 
 
-class SendCheckedLabs(Form):
+class SendCheckedLabsForm(Form):
     confirm = BooleanField('Confirm')
     send = SubmitField('Send')
 
