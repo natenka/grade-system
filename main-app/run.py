@@ -5,6 +5,7 @@ from config import config
 from flask.ext.script import Manager, Shell
 import commands
 
+
 if __name__ == '__main__':
 
     manager = Manager(create_app)
