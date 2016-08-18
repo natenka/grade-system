@@ -11,7 +11,7 @@ from flask import current_app
 from . import main
 from ..models import User
 from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCheckedLabsForm, SendMailToAllStudentsForm, EditReportForm, ShowReportForm
-from .main_helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports, sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time, st_id_gdisk, LAB_ID_RANGE
+from .main_helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports, sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time, st_id_gdisk, LAB_ID_RANGE, get_st_cfg_files
 
 import os
 import datetime
@@ -78,8 +78,10 @@ def report(id):
     student = get_student_name(DB, st_id)
     print student
 
-    return render_template('report.html', lab=lab_id, student=student,
-                           st_id=st_id, diff=diff_report, form=form,
+    st_config_files = get_st_cfg_files(DB, st_id, lab_id, current_app.config)
+
+    return render_template('report.html', lab=lab_id, student=student, files=st_config_files,
+                           cfg_name="student", st_id=st_id, diff=diff_report, form=form,
                            comments=get_all_comments_for_lab(DB, lab_id))
 
 
@@ -123,7 +125,7 @@ def lab_info():
 def lab_initial(lab_id):
 
     files = return_cfg_files(current_app.config['DB'],lab_id, 'initial', current_app.config)
-    return render_template('lab_initial.html', lab=lab_id, files=files)
+    return render_template('lab_initial.html', lab=lab_id, files=files, cfg_name="initial")
 
 
 @main.route('/lab_answer/<lab_id>', methods=['GET', 'POST'])
@@ -131,7 +133,7 @@ def lab_initial(lab_id):
 def lab_answer(lab_id):
 
     files = return_cfg_files(current_app.config['DB'], lab_id, 'answer', current_app.config)
-    return render_template('lab_answer.html', lab=lab_id, files=files)
+    return render_template('lab_answer.html', lab=lab_id, files=files, cfg_name="answer")
 
 
 

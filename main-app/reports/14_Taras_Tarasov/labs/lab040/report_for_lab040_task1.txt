@@ -1,0 +1,111 @@
+==========r1.txt==========
+
+-ip sla 1
+- udp-jitter 188.1.109.10 16385 codec g729a
+
+-ip sla schedule 1 start-time now
+==========r2.txt==========
+
+ interface Serial1/0
+  no ip address
+  encapsulation ppp
++ shutdown
+  serial restart-delay 0
+==========r3.txt==========
+No differences. Good job!
+==========r4.txt==========
+
+ router eigrp NAMEDEIGRP
+  address-family ipv4 unicast autonomous-system 100
+-  metric rib-scale 200
++  metric rib-scale 64
+==========r5.txt==========
+
++router eigrp NAMEDEIGRP
++ address-family ipv4 unicast autonomous-system 100
++  topology base
++   metric maximum-hops 200
++  exit-af-topology
++  network 180.1.0.0
++  network 188.1.0.0
++  metric rib-scale 64
++ exit-address-family
+==========r6.txt==========
+
+ router eigrp NAMEDEIGRP
+  address-family ipv4 unicast autonomous-system 100
+-  metric rib-scale 200
++  metric rib-scale 64
+==========r7.txt==========
+
+ router eigrp NAMEDEIGRP
+  address-family ipv4 unicast autonomous-system 100
+-  metric rib-scale 200
++  metric rib-scale 64
+==========r8.txt==========
+
+ router eigrp NAMEDEIGRP
+  address-family ipv4 unicast autonomous-system 100
+-  metric rib-scale 200
++  metric rib-scale 64
+==========r9.txt==========
+
+ interface Ethernet0/1
+  ip address 10.0.0.9 255.255.255.0
++ shutdown
+
+ router eigrp NAMEDEIGRP
+  address-family ipv4 unicast autonomous-system 100
+-  metric rib-scale 200
++  metric rib-scale 64
+R9#sh policy-map interface multilink 1
+ Multilink1
+  Service-policy output: COMPRESS
+    Class-map: RTP (match-all)
+      193 packets, 11966 bytes
+      5 minute offered rate 0000 bps, drop rate 0000 bps
+      Match: access-group name RTP
+      compress:
+          header ip rtp
+          UDP/RTP (compression on, IPHC, RTP)
+            Sent:    193 total, 185 compressed,
+                     0 bytes saved, 3885 bytes sent
+                     1.50 efficiency improvement factor
+                     99% hit ratio, five minute miss rate 0 misses/sec, 0 max
+                     rate 0 bps
+    Class-map: class-default (match-any)
+      208 packets, 19108 bytes
+      5 minute offered rate 0000 bps, drop rate 0000 bps
+      Match: any
+==========r10.txt==========
+
+ interface Ethernet0/1
+  ip address 10.0.0.10 255.255.255.0
+- shutdown
+
+ router eigrp NAMEDEIGRP
+  address-family ipv4 unicast autonomous-system 100
+-  metric rib-scale 200
++  metric rib-scale 64
+
+-ip sla responder
+==========sw1.txt==========
+
+ interface Vlan1
+  ip address 10.0.0.101 255.255.255.0
++ shutdown
+==========sw2.txt==========
+
+ interface Vlan1
+  ip address 10.0.0.102 255.255.255.0
++ shutdown
+==========sw3.txt==========
+
+ interface Vlan1
+  ip address 10.0.0.103 255.255.255.0
++ shutdown
+==========sw4.txt==========
+
+ interface Vlan1
+  ip address 10.0.0.104 255.255.255.0
++ shutdown

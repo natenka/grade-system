@@ -74,6 +74,30 @@ def cfg_files_in_dir(dir_name):
 
 ### Get functions
 
+
+def get_st_cfg_files(db_name, st_id, lab_id, config):
+    lab_name = 'lab%03d' % int(lab_id)
+    STUDENT_ID_FOLDER = st_id_gdisk(db_name)
+    ST_GDISK_FOLDER = STUDENT_ID_FOLDER[st_id]+'/'+'labs/'
+    CFG_PATH = config['PATH_STUDENT'] + ST_GDISK_FOLDER + lab_name + '/'
+
+    task_n = get_task_number(db_name,lab_id)
+
+    files = odict()
+    for n in range(1,task_n+1):
+        task = 'task' + str(n)
+        task_path = CFG_PATH + task + '/'
+        cfg_files = sorted(cfg_files_in_dir(task_path))
+        cfg_files = natsorted(cfg_files, key=lambda y: y.lower())
+        files[task] = odict()
+
+        for f in cfg_files:
+            with open(task_path+f) as cfg_f:
+                files[task][f.split('.')[0]] = cfg_f.read()
+
+    return files
+
+
 def get_all_labs_checked_by_expert(db_name, expert):
     query = """
             select lab_id, results.st_id, st_name, mark, check_time
@@ -229,7 +253,10 @@ def get_all_comments_for_lab(db_name, lab_id):
     """
     query = "select comments from results where lab_id = ?"
     comments = query_db(db_name, query, args = (lab_id,))
-    return set([comment for comment in comments if comment[0]])
+    result = []
+    if len(comments) > 1:
+        result = set([comment for comment in comments if comment[0]])
+    return result
 
 
 def get_lab_status(db_name, st_id, lab_id):

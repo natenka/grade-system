@@ -1,0 +1,252 @@
+==========r1.txt==========
+
+-logging buffered 400000
+
+-logging console informational
+
+-no ip domain lookup
+
+ interface Serial1/0
+  no ip address
+  encapsulation ppp
++ shutdown
+  serial restart-delay 0
+
+ ip sla 1
+- http get http://188.1.109.10
+
+-ip sla schedule 1 start-time now
++ http get http://180.1.10.10/
+
++ip sla schedule 1 life forever start-time now
+
+ ip sla 2
+- udp-jitter 188.1.109.10 16384 codec g729a
+
+-ip sla schedule 2 start-time now
++ udp-jitter 180.1.10.10 7777 codec g729a
++ frequency 30
+
++ip sla schedule 2 life forever start-time now
+
+ ip sla 3
+- path-jitter 188.1.109.10
+
+-ip sla schedule 3 start-time now
++ path-jitter 180.1.10.10
+
++ip sla schedule 3 life forever start-time now
+R1#sh ip sla statistics 1
+IPSLAs Latest Operation Statistics
+IPSLA operation id: 1
+        Latest RTT: 32 milliseconds
+Latest operation start time: 18:04:53 CET Sat Jul 30 2016
+Latest operation return code: OK
+Latest DNS RTT: 0 ms
+Latest TCP Connection RTT: 17 ms
+Latest HTTP Transaction RTT: 15 ms
+Number of successes: 2
+Number of failures: 1
+Operation time to live: Forever
+R1#sh ip sla statistics 2
+IPSLAs Latest Operation Statistics
+IPSLA operation id: 2
+Type of operation: udp-jitter
+        Latest RTT: 53 milliseconds
+Latest operation start time: 18:06:03 CET Sat Jul 30 2016
+Latest operation return code: OK
+RTT Values:
+        Number Of RTT: 131              RTT Min/Avg/Max: 12/53/794 milliseconds
+Latency one-way time:
+        Number of Latency one-way Samples: 0
+        Source to Destination Latency one way Min/Avg/Max: 0/0/0 milliseconds
+        Destination to Source Latency one way Min/Avg/Max: 0/0/0 milliseconds
+Jitter Time:
+        Number of SD Jitter Samples: 0
+        Number of DS Jitter Samples: 0
+        Source to Destination Jitter Min/Avg/Max: 0/0/0 milliseconds
+        Destination to Source Jitter Min/Avg/Max: 0/0/0 milliseconds
+Over Threshold:
+        Number Of RTT Over Threshold: 0 (0%)
+Packet Loss Values:
+        Loss Source to Destination: 0
+        Source to Destination Loss Periods Number: 0
+        Source to Destination Loss Period Length Min/Max: 0/0
+        Source to Destination Inter Loss Period Length Min/Max: 0/0
+        Loss Destination to Source: 0
+        Destination to Source Loss Periods Number: 0
+        Destination to Source Loss Period Length Min/Max: 0/0
+        Destination to Source Inter Loss Period Length Min/Max: 0/0
+        Out Of Sequence: 0      Tail Drop: 1000
+        Packet Late Arrival: 0  Packet Skipped: 0
+Voice Score Values:
+        Calculated Planning Impairment Factor (ICPIF): 11
+        MOS score: 4.06
+Number of successes: 1
+Number of failures: 0
+Operation time to live: Forever
+R1#sh ip sla statistics 3
+IPSLAs Latest Operation Statistics
+IPSLA operation id: 3
+        Latest RTT: 13 milliseconds
+Latest operation start time: 18:04:53 CET Sat Jul 30 2016
+Latest operation return code: OK
+Hop IP 188.1.12.2:
+Round Trip Time milliseconds:
+        Latest RTT: 1 ms
+        Number of RTT: 10
+        RTT Min/Avg/Max: 1/1/1 ms
+Jitter time milliseconds:
+        Number of jitter: 0
+        Jitter Min/Avg/Max: 0/0/0 ms
+Packet Values:
+        Packet Loss (Timeouts): 0
+        Out of Sequence: 0
+        Discarded Samples: 0
+Hop IP 188.1.235.5:
+Round Trip Time milliseconds:
+        Latest RTT: 3 ms
+        Number of RTT: 10
+        RTT Min/Avg/Max: 1/3/18 ms
+Jitter time milliseconds:
+        Number of jitter: 5
+        Jitter Min/Avg/Max: 1/7/17 ms
+Packet Values:
+        Packet Loss (Timeouts): 0
+        Out of Sequence: 0
+        Discarded Samples: 0
+Hop IP 188.1.45.6:
+Round Trip Time milliseconds:
+        Latest RTT: 2 ms
+        Number of RTT: 10
+        RTT Min/Avg/Max: 2/2/3 ms
+Jitter time milliseconds:
+        Number of jitter: 4
+        Jitter Min/Avg/Max: 1/1/1 ms
+Packet Values:
+        Packet Loss (Timeouts): 0
+        Out of Sequence: 0
+        Discarded Samples: 0
+Hop IP 188.1.67.7:
+Round Trip Time milliseconds:
+        Latest RTT: 8 ms
+        Number of RTT: 10
+        RTT Min/Avg/Max: 3/8/36 ms
+Jitter time milliseconds:
+        Number of jitter: 6
+        Jitter Min/Avg/Max: 1/9/28 ms
+Packet Values:
+        Packet Loss (Timeouts): 0
+        Out of Sequence: 0
+        Discarded Samples: 0
+Hop IP 188.1.78.8:
+Round Trip Time milliseconds:
+        Latest RTT: 3 ms
+        Number of RTT: 10
+        RTT Min/Avg/Max: 2/3/11 ms
+Jitter time milliseconds:
+        Number of jitter: 7
+        Jitter Min/Avg/Max: 1/1/5 ms
+Packet Values:
+        Packet Loss (Timeouts): 0
+        Out of Sequence: 0
+        Discarded Samples: 0
+Hop IP 188.1.89.9:
+Round Trip Time milliseconds:
+        Latest RTT: 6 ms
+        Number of RTT: 10
+        RTT Min/Avg/Max: 6/5/8 ms
+Jitter time milliseconds:
+        Number of jitter: 5
+        Jitter Min/Avg/Max: 1/1/1 ms
+Packet Values:
+        Packet Loss (Timeouts): 0
+        Out of Sequence: 1
+        Discarded Samples: 1
+Hop IP 188.1.109.10:
+Round Trip Time milliseconds:
+        Latest RTT: 13 ms
+        Number of RTT: 10
+        RTT Min/Avg/Max: 11/13/22 ms
+Jitter time milliseconds:
+        Number of jitter: 8
+        Jitter Min/Avg/Max: 1/4/11 ms
+Packet Values:
+        Packet Loss (Timeouts): 0
+        Out of Sequence: 0
+        Discarded Samples: 0
+Operation time to live: Forever
+==========r2.txt==========
+
+ interface Serial1/0
+  no ip address
+  encapsulation ppp
++ shutdown
++ serial restart-delay 0
+==========r3.txt==========
+No differences. Good job!
+==========r4.txt==========
+No differences. Good job!
+==========r5.txt==========
+No differences. Good job!
+==========r6.txt==========
+No differences. Good job!
+==========r7.txt==========
+No differences. Good job!
+==========r8.txt==========
+No differences. Good job!
+==========r9.txt==========
+No differences. Good job!
+==========r10.txt==========
+
+-logging buffered 400000
+
+-logging console informational
+
+ interface Multilink1
+  ip address 188.1.109.10 255.255.255.0
++ ip access-group IPSLA in
+  ppp multilink
+  ppp multilink group 1
+
+ interface Ethernet0/1
+  ip address 10.0.0.10 255.255.255.0
+- shutdown
+
+ interface Ethernet0/1.109
+  encapsulation dot1Q 109
+- ip address 188.1.109.10 255.255.255.0
+  shutdown
+
++ip access-list extended IPSLA
++ permit udp host 188.1.12.1 any eq 7777 1967
++ deny   udp any any eq 7777 1967
++ permit ip any any
+
++ip sla responder udp-echo port 7777
+
+-access-list 101 permit tcp any any eq www
+
+-access-list 101 permit tcp any eq www any
+
+-access-list 102 permit udp any any
+==========sw1.txt==========
+
+ interface Vlan1
+  ip address 10.0.0.101 255.255.255.0
++ shutdown
+==========sw2.txt==========
+
+ interface Vlan1
+  ip address 10.0.0.102 255.255.255.0
++ shutdown
+==========sw3.txt==========
+
+ interface Vlan1
+  ip address 10.0.0.103 255.255.255.0
++ shutdown
+==========sw4.txt==========
+
+ interface Vlan1
+  ip address 10.0.0.104 255.255.255.0
++ shutdown

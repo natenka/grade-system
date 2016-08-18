@@ -4,31 +4,9 @@
 {% block page_content %}
 
 <h3>Начальные конфиги лабораторной {{lab}}</h3>
-
-{% for task in files %}
-<div class="spoiler-wrapper">
-    <div class="spoiler folded"><a href="javascript:void(0);">Show Initial configs for {{ task }}</a></div>
-    <div role="tabpanel" class="spoiler-text">
-
-        <!-- Nav tabs -->
-        <ul class="nav nav-tabs" role="tablist">
-            {% for cfg in files[task] %}
-            <li role="presentation"><a href="#{{task}}{{ cfg }}" aria-controls="{{task}}{{ cfg }}" role="tab" data-toggle="tab">{{ cfg }}</a></li>
-            {% endfor %}
-        </ul>
-
-            <!-- Tab panes -->
-            <div class="tab-content">
-                {% for cfg in files[task] %}
-                <div role="tabpanel" class="tab-pane fade in active" id="{{task}}{{ cfg }}">
-                    <pre>{{ files[task][cfg] }}</pre>
-                </div>
-                {% endfor %}
-            </div>
-
-    </div>
-</div>
-{% endfor %}
+<br>
+<br>
+{% include 'show_configs.html' %}
 
 {% endblock %}
 

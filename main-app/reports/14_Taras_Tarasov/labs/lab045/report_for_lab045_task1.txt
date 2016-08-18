@@ -1,0 +1,118 @@
+==========r1.txt==========
+
+ router eigrp NAMEDEIGRP
+  address-family ipv4 unicast autonomous-system 100
+   af-interface Ethernet0/1.12
+-   authentication mode hmac-sha-256 7 1488
++   authentication mode hmac-sha-256 7 10D1
+==========r2.txt==========
+
+ interface Serial1/0
+  no ip address
+  encapsulation ppp
++ shutdown
+  serial restart-delay 0
+
+ router eigrp NAMEDEIGRP
+  address-family ipv4 unicast autonomous-system 100
++  af-interface Ethernet0/1.235
++   authentication mode hmac-sha-256 7 08BE
++  exit-af-interface
++  af-interface Ethernet0/1.23
++   authentication mode hmac-sha-256 7 1286
+   af-interface Ethernet0/1.12
+    summary-address 0.0.0.0 0.0.0.0
+-   authentication mode hmac-sha-256 7 0299
+-  exit-af-interface
+-  af-interface Ethernet0/1.23
+    authentication mode hmac-sha-256 7 08BE
+-  af-interface Ethernet0/1.235
+-   authentication mode hmac-sha-256 7 0699
+==========r3.txt==========
+
+ router eigrp NAMEDEIGRP
+  address-family ipv4 unicast autonomous-system 100
+   af-interface Ethernet0/1.23
+-   authentication mode hmac-sha-256 7 0790
++   authentication mode hmac-sha-256 7 009B
+   af-interface Ethernet0/1.235
+-   authentication mode hmac-sha-256 7 0594
++   authentication mode hmac-sha-256 7 158D
++  exit-af-interface
++  af-interface Ethernet0/1.34
++   authentication mode hmac-sha-256 7 039B
+==========r4.txt==========
+
+ router eigrp NAMEDEIGRP
+  address-family ipv4 unicast autonomous-system 100
++  af-interface Ethernet0/1.34
++   authentication mode hmac-sha-256 7 09D3
++  exit-af-interface
+==========r5.txt==========
+
+ router eigrp NAMEDEIGRP
+  address-family ipv4 unicast autonomous-system 100
+   af-interface Ethernet0/1.235
+-   authentication mode hmac-sha-256 7 08BE
++   authentication mode hmac-sha-256 7 1286
+==========r6.txt==========
+
+ router eigrp 100
+  metric maximum-hops 200
+  network 180.1.0.0
+  network 188.1.0.0
+  passive-interface Ethernet0/1.6
++ passive-interface Loopback0
+==========r7.txt==========
+
+ router eigrp 100
+  metric maximum-hops 200
+  network 180.1.0.0
+  network 188.1.0.0
+  passive-interface Ethernet0/1.7
++ passive-interface Loopback0
+==========r8.txt==========
+
+ router eigrp 100
+  metric maximum-hops 200
+  network 180.1.0.0
+  network 188.1.0.0
++ passive-interface Loopback0
+
++end
+==========r9.txt==========
+
+ router eigrp 100
+  metric maximum-hops 200
+  network 180.1.0.0
+  network 188.1.0.0
+  passive-interface Ethernet0/1.9
++ passive-interface Loopback0
+==========r10.txt==========
+
+ router eigrp 100
+  metric maximum-hops 200
+  network 180.1.0.0
+  network 188.1.0.0
++ passive-interface Loopback0
+  passive-interface Ethernet0/1.10
+==========sw1.txt==========
+
+ interface Vlan1
+  ip address 10.0.0.101 255.255.255.0
++ shutdown
+==========sw2.txt==========
+
+ interface Vlan1
+  ip address 10.0.0.102 255.255.255.0
++ shutdown
+==========sw3.txt==========
+
+ interface Vlan1
+  ip address 10.0.0.103 255.255.255.0
++ shutdown
+==========sw4.txt==========
+
+ interface Vlan1
+  ip address 10.0.0.104 255.255.255.0
++ shutdown

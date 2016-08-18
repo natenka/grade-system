@@ -6,7 +6,7 @@ class Config:
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 
     BASE_PATH = os.path.abspath(os.path.dirname(__file__))+'/'
-    GD_PATH = BASE_PATH + ''
+    GD_PATH = BASE_PATH + 'gdisk_ccie/'
     REPORT_PATH = BASE_PATH + 'reports/'
 
     PATH_INITIAL = GD_PATH + '_initial_configs/labs/'
