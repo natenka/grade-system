@@ -228,7 +228,11 @@ def get_st_list_not_done_lab(db_name, config):
 
     for lab_id in LAB_ID_RANGE:
         query = "select st_id from results where lab_id = ?"
-        st_done = [st[0] for st in query_db(db_name, query, args=(lab_id,))]
+        result = query_db(db_name, query, args=(lab_id,))
+        if len(result) == 1:
+            st_done = [result[0]]
+        else:
+            st_done = [st[0] for st in result]
         lab_dict[lab_id] = ', '.join([str(st) for st in config['ST_ID_RANGE'] if not st in st_done])
 
     return lab_dict
@@ -660,7 +664,7 @@ def generate_dict_report_content(db_name, st_id, lab_id, config):
     return diff_report
 
 
-def return_report_content(st_id, lab_id, task, config):
+def return_report_content(db_name, st_id, lab_id, task, config):
     REPORT_PATH = config['REPORT_PATH']
     STUDENT_ID_FOLDER = st_id_gdisk(db_name)
 

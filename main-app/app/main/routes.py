@@ -99,7 +99,7 @@ def edit_report(id):
     form = EditReportForm()
     student = get_student_name(current_app.config['DB'], st_id)
 
-    report_fname, report = return_report_content(st_id, lab_id, taski, current_app.config)
+    report_fname, report = return_report_content(current_app.config['DB'], st_id, lab_id, task, current_app.config)
     form.report.data = report
 
     if form.validate_on_submit():
