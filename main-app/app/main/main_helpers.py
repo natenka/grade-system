@@ -76,25 +76,40 @@ def cfg_files_in_dir(dir_name):
 
 
 def get_st_cfg_files(db_name, st_id, lab_id, config):
-    lab_name = 'lab%03d' % int(lab_id)
-    STUDENT_ID_FOLDER = st_id_gdisk(db_name)
-    ST_GDISK_FOLDER = STUDENT_ID_FOLDER[st_id]+'/'+'labs/'
-    CFG_PATH = config['PATH_STUDENT'] + ST_GDISK_FOLDER + lab_name + '/'
 
-    task_n = get_task_number(db_name,lab_id)
+    if lab_id < 1000:
+        lab_name = 'lab%03d' % int(lab_id)
+        ST_GDISK_FOLDER = STUDENT_ID_FOLDER[st_id]+'/'+'labs/'
+        CFG_PATH = config['PATH_STUDENT'] + ST_GDISK_FOLDER + lab_name + '/'
 
-    files = odict()
-    for n in range(1,task_n+1):
-        task = 'task' + str(n)
-        task_path = CFG_PATH + task + '/'
-        cfg_files = sorted(cfg_files_in_dir(task_path))
+        task_n = get_task_number(db_name,lab_id)
+
+        files = odict()
+        for n in range(1,task_n+1):
+            task = 'task' + str(n)
+            task_path = CFG_PATH + task + '/'
+            cfg_files = sorted(cfg_files_in_dir(task_path))
+            cfg_files = natsorted(cfg_files, key=lambda y: y.lower())
+            files[task] = odict()
+
+            for f in cfg_files:
+                with open(task_path+f) as cfg_f:
+                    files[task][f.split('.')[0]] = cfg_f.read()
+
+    else:
+        lab_name = 'lab%03d' % (int(lab_id)-1000)
+        ST_GDISK_FOLDER = STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'
+        CFG_PATH = PATH_STUDENT + ST_GDISK_FOLDER + lab_name + '/'
+
+        files = odict()
+
+        cfg_files = sorted(cfg_files_in_dir(CFG_PATH))
         cfg_files = natsorted(cfg_files, key=lambda y: y.lower())
-        files[task] = odict()
+        files['task1'] = odict()
 
         for f in cfg_files:
-            with open(task_path+f) as cfg_f:
-                files[task][f.split('.')[0]] = cfg_f.read()
-
+            with open(CFG_PATH+f) as cfg_f:
+                files['task1'][f.split('.')[0]] = cfg_f.read()
     return files
 
 
