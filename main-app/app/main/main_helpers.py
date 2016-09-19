@@ -35,6 +35,8 @@ for lab in absent_labs:
     LAB_ID_RANGE.remove(lab)
 
 
+lab_status_values = ['Failed', 'Done', 'ReportGenerated', 'Sended(Done)', 'Loaded']
+
 def query_db(db_name, query, args=()):
     with sqlite3.connect(db_name) as conn:
         cursor = conn.cursor()
@@ -75,7 +77,25 @@ def cfg_files_in_dir(dir_name):
 ### Get functions
 
 
+def get_experts_stat(db_name, current_expert):
+    query = "select expert from results"
+    res = set([i[0] for i in query_db(db_name, query) if i[0]])
+    result = {}
+    for expert in res:
+        result[len(get_all_labs_checked_by_expert(db_name, expert))] = expert
+    ordered_result = odict()
+    for key in sorted(result, reverse=True):
+        ordered_result[key] = result[key]
+    place = ''
+    for num, key in enumerate(ordered_result.keys(), 1):
+        if len(get_all_labs_checked_by_expert(db_name, current_expert)) == int(key):
+            place = num
+    return place, ordered_result
+
+
 def get_st_cfg_files(db_name, st_id, lab_id, config):
+
+    STUDENT_ID_FOLDER = st_id_gdisk(db_name)
 
     if lab_id < 1000:
         lab_name = 'lab%03d' % int(lab_id)
@@ -389,7 +409,6 @@ def check_new_loaded_labs(db_name,config, verbose=True):
 
     for st_id in config['ST_ID_RANGE']:
         for lab_id in range_labs:
-            lab_status_values = ['Failed', 'Done', 'ReportGenerated', 'Sended(Done)']
             lab_status = get_lab_status(db_name,st_id,lab_id)
             if lab_status in lab_status_values:
                 pass
@@ -468,11 +487,10 @@ def check_new_loaded_BIG_labs(db_name, config, verbose=True):
     for st_id in config['ST_ID_RANGE']:
         for lab_id in [1001, 1002]:
             #print st_id, lab_id
-            lab_status_values = ['Failed', 'Done', 'ReportGenerated', 'Sended(Done)']
             lab_status = get_lab_status(db_name,st_id,lab_id)
             if lab_status in lab_status_values:
                 pass
-            elif lab_status == None and check_student_BIG_lab_files(db_name, st_id, lab_id, config):
+            elif not lab_status and check_student_BIG_lab_files(db_name, st_id, lab_id, config):
                 set_lab_status(db_name, st_id, lab_id, 'Loaded')
                 if verbose:
                     print "Set status to 'Loaded' for lab %d student %d" % (lab_id, st_id)
@@ -731,13 +749,13 @@ def mail(to, subject, text, attach=None):
     mailServer.close()
 
 
-def send_mail_to_all_students(message):
-    all_emails = query_db(DB, "select st_email from students")
+def send_mail_to_all_students(db_name, header, message):
+    all_emails = query_db(db_name, "select st_email from students")
 
     for e in all_emails:
         email = e[0]
         if len(email) > 3:
-            mail(email, "[Lab] Big Lab 2!", message)
+            mail(email, header, message)
         print email
 
 def send_mail_with_reports(db_name, config):

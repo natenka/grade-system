@@ -11,7 +11,7 @@ from flask import current_app
 from . import main
 from ..models import User
 from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCheckedLabsForm, SendMailToAllStudentsForm, EditReportForm, ShowReportForm
-from .main_helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports, sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time, st_id_gdisk, LAB_ID_RANGE, get_st_cfg_files
+from .main_helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports, sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time, st_id_gdisk, LAB_ID_RANGE, get_st_cfg_files, get_experts_stat, check_new_loaded_configs
 
 import os
 import datetime
@@ -21,7 +21,10 @@ from operator import itemgetter
 @main.route('/')
 def index():
 
-    return render_template('index.html')
+    place, exp_stats = get_experts_stat(current_app.config['DB'], str(current_user))
+    lab_count = len(get_all_labs_checked_by_expert(current_app.config['DB'], str(current_user)))
+
+    return render_template('index.html', lab_count=lab_count, place=place, exp_stats=exp_stats)
 
 
 @main.route('/labs', methods=['GET', 'POST'])
@@ -66,16 +69,17 @@ def report(id):
     form.comment.data = cur_comment
     form.mark.data = cur_mark
 
+    student = get_student_name(DB, st_id)
+
     if form.validate_on_submit():
         comment = request.form['comment'] if 'comment' in request.form.keys() else ''
 
         set_lab_check_results(DB, st_id, lab_id, 'Done', comment, request.form['mark'], current_user, today_data)
-        print 'DONE with submit grade'
+        print 'LAB', lab_id, 'for Student', st_id, student, 'DONE', 'with mark', request.form['mark']
 
         return redirect(url_for('main.labs'))
 
     diff_report = generate_dict_report_content(DB, st_id, lab_id, current_app.config)
-    student = get_student_name(DB, st_id)
     print student
 
     st_config_files = get_st_cfg_files(DB, st_id, lab_id, current_app.config)
@@ -116,6 +120,7 @@ def edit_report(id):
 @login_required
 def lab_info():
 
+    check_new_loaded_configs(current_app.config['DB'], current_app.config)
     labs = get_all_for_loaded_configs(current_app.config['DB'])
     return render_template('lab_info.html', lab_count = len(labs), labs=labs)
 
@@ -223,6 +228,11 @@ def manage():
     if 'confirm' in request.form.keys() and 'send' in request.form.keys():
         send_mail_with_reports(current_app.config['DB'], current_app.config)
         return redirect(url_for('main.manage'))
+
+    #if 'confirm' in request.form.keys() and 'all_send' in request.form.keys():
+    #    header = send_mail_to_all_form.header.data
+    #    message = send_mail_to_all_form.message.data
+    #    send_mail_to_all_students(current_app.config['DB'], header, message)
 
     configs_upd_time, students_upd_time = get_last_sync_time(current_app.config['BASE_PATH'])
 

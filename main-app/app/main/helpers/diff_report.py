@@ -108,7 +108,7 @@ def parseSection(section,level=1):
     section_dict = odict()
 
     for command in section:
-        if level == 1 and (len(command) < 2 or checkIgnore(command,ignore)):
+        if level == 1 and (len(command) < 2 or checkIgnore(command,ignore)) or len(command) <= level:
             pass
         elif command[level] in string.ascii_letters:
             if current_section:
@@ -237,6 +237,7 @@ def generateLabReport(lab, task, files, path_answer, path_student):
     #print "Generate report for %s %s. Files: %s" % (lab,task,', '.join(files))
 
     results = []
+    percent = 0
 
     for config in files:
         answer_file = path_answer + config

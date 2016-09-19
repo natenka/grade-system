@@ -14,7 +14,6 @@ class LoginForm(Form):
 class LabForm(Form):
     comment = TextAreaField('\nAdd comment (optional)')
     mark = IntegerField('Enter lab mark')
-    submit_grade = BooleanField('Submit grade', validators=[Required()])
     done = SubmitField('Done')
 
 
@@ -27,6 +26,7 @@ class ShowReportForm(Form):
     select_st_id = SelectField('Select ST ID', choices = [])
     select_lab_id = SelectField('Select Lab ID', choices = [])
     open_report = SubmitField('Open report')
+    regenerate_report = SubmitField('Regenerate report')
 
 
 class SyncGdriveForm(Form):

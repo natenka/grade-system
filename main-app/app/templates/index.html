@@ -13,5 +13,21 @@
         <br>
         <br>
         <p>Теперь можешь приступать к <a href="{{ url_for('main.labs') }}">проверке лаборов</a> :)</p>
+        <br>
+        <h2>Ты проверил <b>{{ lab_count }} лаборов!</b></h2>
+        <br>
+        <h3>Ты {{place}} в рейтинге экспертов по проверке лаб.</h3>
+        <table class="table table-hover">
+            <tr>
+                <th>Labs</th>
+                <th>Expert</th>
+            </tr>
+            {% for labs in exp_stats %}
+            <tr>
+                <td>{{labs}}</td>
+                <td>{{exp_stats[labs]}}</td>
+            </tr>
+            {% endfor %}
+        </table>
     {% endif %}
 {% endblock %}
