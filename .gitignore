@@ -1,6 +1,7 @@
 #
 ######
 main-app/gdisk_ccie/*
+main-app/reports/*
 
 # Credentials files  #
 ######################
