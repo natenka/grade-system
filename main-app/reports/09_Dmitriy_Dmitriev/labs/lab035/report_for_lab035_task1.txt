@@ -1,7 +1,0 @@
-==========r1.txt==========
-No differences. Good job!
-==========r2.txt==========
-
- archive
-- path tftp://188.1.12.1/unix/DayliBackups/$h-$t
-+ path tftp://188.1.12.1/unix/DayliBackups/&h-&t
