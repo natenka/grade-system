@@ -20,6 +20,7 @@ mycreds.txt
 *.log
 *.sql
 grade_system.sqlite
+user_info.sqlite3
 
 # OS generated files #
 ######################
