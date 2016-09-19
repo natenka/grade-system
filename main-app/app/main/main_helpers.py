@@ -294,7 +294,7 @@ def get_all_comments_for_lab(db_name, lab_id):
     comments = query_db(db_name, query, args = (lab_id,))
     result = []
     if len(comments) > 1:
-        result = set([comment for comment in comments if comment[0]])
+        result = set([comment[0] for comment in comments if comment[0]])
     return result
 
 
