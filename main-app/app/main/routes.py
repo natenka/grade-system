@@ -252,6 +252,7 @@ def login():
             flash('Invalid username or password.')
             return redirect(url_for('main.login', **request.args))
         login_user(user, form.remember_me.data)
+
         return redirect(request.args.get('next') or url_for('main.index'))
     return render_template('login.html', form=form)
 
@@ -260,6 +261,7 @@ def login():
 @login_required
 def logout():
     logout_user()
+
     return redirect(url_for('main.index'))
 
 

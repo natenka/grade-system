@@ -27,6 +27,7 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
                     'sqlite:///' + os.path.join(Config.BASE_PATH, 'user_info_dev.sqlite3')
 
+    USER_DB = Config.BASE_PATH + 'user_info_dev.sqlite3'
     DB = Config.BASE_PATH + 'grade_system_dev.sqlite'
     ST_ID_RANGE = range(1,15)
 

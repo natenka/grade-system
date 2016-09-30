@@ -2,13 +2,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db, lm
 from flask.ext.login import UserMixin
 
-lm.login_view = 'main.login'
+#lm.login_view = 'main.login'
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(16), index=True, unique=True)
     password_hash = db.Column(db.String(64))
+    role = db.Column(db.String(16))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
