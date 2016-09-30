@@ -4,6 +4,7 @@ from flask.ext.bootstrap import Bootstrap
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
 from flask.ext.moment import Moment
+from flask.ext.migrate import Migrate
 
 from config import config
 
@@ -12,6 +13,7 @@ moment = Moment()
 db = SQLAlchemy()
 lm = LoginManager()
 lm.login_view = 'main.login'
+migrate = Migrate()
 
 
 def create_app(config_name):
@@ -29,6 +31,7 @@ def create_app(config_name):
     db.init_app(app)
     lm.init_app(app)
     moment.init_app(app)
+    migrate.init_app(app, db)
 
     # import blueprints
     from .main import main as main_blueprint

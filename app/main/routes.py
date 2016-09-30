@@ -4,18 +4,28 @@ import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
+import os
+import datetime
+from operator import itemgetter
+
 from flask import render_template, redirect, url_for, request, flash
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from flask import current_app
 
 from . import main
 from ..models import User
-from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCheckedLabsForm, SendMailToAllStudentsForm, EditReportForm, ShowReportForm
-from .main_helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs, generate_dict_report_content, return_report_content, get_comment_email_mark_from_db, get_all_comments_for_lab, get_all_for_loaded_configs, return_cfg_files, get_student_name, get_results_web, get_lab_stats_web, get_st_list_not_done_lab, get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports, sync, configs_folder_id, students_folder_id, last_sync, set_last_sync, get_last_sync_time, st_id_gdisk, LAB_ID_RANGE, get_st_cfg_files, get_experts_stat, check_new_loaded_configs
+from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCheckedLabsForm,\
+                   SendMailToAllStudentsForm, EditReportForm, ShowReportForm, RegisterUserForm
+from .main_helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs,\
+                          generate_dict_report_content, return_report_content,\
+                          get_comment_email_mark_from_db, get_all_comments_for_lab,\
+                          get_all_for_loaded_configs, return_cfg_files, get_student_name,\
+                          get_results_web, get_lab_stats_web, get_st_list_not_done_lab,\
+                          get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports,\
+                          sync, configs_folder_id, students_folder_id, last_sync, set_last_sync,\
+                          get_last_sync_time, st_id_gdisk, LAB_ID_RANGE, get_st_cfg_files,\
+                          get_experts_stat, check_new_loaded_configs
 
-import os
-import datetime
-from operator import itemgetter
 
 
 @main.route('/')
@@ -75,7 +85,7 @@ def report(id):
         comment = request.form['comment'] if 'comment' in request.form.keys() else ''
 
         set_lab_check_results(DB, st_id, lab_id, 'Done', comment, request.form['mark'], current_user, today_data)
-        print 'LAB', lab_id, 'for Student', st_id, student, 'DONE', 'with mark', request.form['mark']
+        print "LAB %d for Student %d %s DONE with mark %s" % (lab_id, st_id, student, str(request.form['mark']))
 
         return redirect(url_for('main.labs'))
 
@@ -263,6 +273,23 @@ def logout():
     logout_user()
 
     return redirect(url_for('main.index'))
+
+
+@main.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterUserForm()
+
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+
+        if not user is None:
+            flash('This username already exists!')
+            return redirect(url_for('main.register', **request.args))
+
+        User.register(form.username.data, form.password.data)
+
+        return redirect(url_for('main.index'))
+    return render_template('register.html', form=form)
 
 
 @main.route('/help')

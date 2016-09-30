@@ -13,7 +13,7 @@ class LoginForm(Form):
 
 class LabForm(Form):
     comment = TextAreaField('\nAdd comment (optional)')
-    mark = IntegerField('Enter lab mark')
+    mark = IntegerField('Enter lab mark', validators=[Required()])
     done = SubmitField('Done')
 
 
@@ -47,3 +47,8 @@ class SendMailToAllStudentsForm(Form):
     message = TextAreaField('Add email message', validators=[Required()])
     all_confirm = BooleanField('Confirm')
     all_send = SubmitField('Send')
+
+class RegisterUserForm(Form):
+    username = StringField('Username', validators=[Required(), Length(1, 16)])
+    password = PasswordField('Password', validators=[Required()])
+    register = SubmitField('Register')
