@@ -20,7 +20,7 @@ from oauth2client.client import AccessTokenRefreshError, flow_from_clientsecrets
 from oauth2client.tools import run
 
 
-os.chdir("/home/nata/grade_system_ver_1.0/grade-system/main-app/app/main/helpers/gdrive/")
+os.chdir("/home/nata/grade_system_ver_1.0/grade-system/app/main/helpers/gdrive/")
 FLAGS = gflags.FLAGS
 
 CLIENT_SECRETS = 'client_secrets.json'
