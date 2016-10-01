@@ -1,9 +1,8 @@
 #
 ######
-main-app/gdisk_ccie/*
-main-app/reports/*
 gdisk_ccie/*
 reports/*
+migrations/*
 last_sync.yml
 
 # Credentials files  #
