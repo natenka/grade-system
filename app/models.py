@@ -16,6 +16,9 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(64), index=True, unique=True)
     labs_to_check = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    st_id = db.Column(db.Integer)
+    labs_allowed_to_check = db.Column(db.String(128))
+
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -50,7 +53,7 @@ class User(UserMixin, db.Model):
         return self.can(Permission.ADMIN)
 
     def list_of_labs_to_check(self):
-        list_labs_to_check = [int(lab) for lab in str(self.labs_to_check).split(',')]
+        list_labs_to_check = [int(lab) for lab in str(self.labs_allowed_to_check).split(',')]
         return list_labs_to_check
 
     def __repr__(self):
