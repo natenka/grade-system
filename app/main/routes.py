@@ -13,7 +13,7 @@ from flask.ext.login import login_required, login_user, logout_user, current_use
 from flask import current_app
 
 from . import main
-from ..models import User
+from ..models import User, Permission
 from .forms import LoginForm, LabForm, SyncGdriveForm, SyncStuGdriveForm, SendCheckedLabsForm,\
                    SendMailToAllStudentsForm, EditReportForm, ShowReportForm, RegisterUserForm
 from .main_helpers import check_labs_and_generate_reports, set_lab_check_results, get_all_loaded_labs,\
@@ -41,12 +41,13 @@ def index():
 
 @main.route('/labs', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def labs():
     check_labs_and_generate_reports(current_app.config['DB'], current_app.config)
 
     labs = get_all_loaded_labs(current_app.config['DB'])
     print current_user
+    if current_user.can(Permission.ADMIN):
+        print "IT WORKS!!!"
     return render_template('labs.html', lab_count = len(labs), labs=labs)
 
 
@@ -165,6 +166,7 @@ def config_report(lab_id):
 
 @main.route('/stats')
 @login_required
+@admin_required
 def stats():
     results = get_results_web(current_app.config['DB'], current_app.config)
     results_by_sum_of_mark = sorted(results, key=itemgetter('total_marks'), reverse=True)
@@ -174,6 +176,7 @@ def stats():
 
 @main.route('/best')
 @login_required
+@admin_required
 def best():
     results = get_results_web(current_app.config['DB'], current_app.config)
     results_by_sum_of_mark = sorted(results, key=itemgetter('total_marks'), reverse=True)
@@ -185,6 +188,7 @@ def best():
 
 @main.route('/best_rating')
 @login_required
+@admin_required
 def best_rating():
     results = get_results_web(current_app.config['DB'], current_app.config, all_st=False)
     results_by_sum_of_mark = sorted(results, key=itemgetter('total_marks'), reverse=True)
@@ -196,6 +200,7 @@ def best_rating():
 
 @main.route('/lab_stats')
 @login_required
+@admin_required
 def lab_stats():
     lab_stats = get_lab_stats_web(current_app.config['DB'])
 
@@ -203,6 +208,7 @@ def lab_stats():
 
 @main.route('/lab_debts')
 @login_required
+@admin_required
 def lab_debts():
     st_not_done_lab = get_st_list_not_done_lab(current_app.config['DB'], current_app.config)
 
@@ -211,6 +217,7 @@ def lab_debts():
 
 @main.route('/stu_stats')
 @login_required
+@admin_required
 def stu_stats():
     results = get_results_web(current_app.config['DB'], current_app.config)
 
@@ -219,6 +226,7 @@ def stu_stats():
 
 @main.route('/manage', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def manage():
     sync_gdrive_form = SyncGdriveForm()
     sync_stu_gdrive_form = SyncStuGdriveForm()
@@ -280,6 +288,7 @@ def logout():
 
 
 @main.route('/register', methods=['GET', 'POST'])
+@admin_required
 def register():
     form = RegisterUserForm()
 
@@ -309,3 +318,7 @@ def help():
 def not_found(e):
     return render_template('404.html')
 
+
+@main.app_errorhandler(403)
+def forbidden(e):
+    return render_template('403.html')
