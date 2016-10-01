@@ -46,8 +46,9 @@ def labs():
 
     labs = get_all_loaded_labs(current_app.config['DB'])
     print current_user
-    if current_user.can(Permission.ADMIN):
-        print "IT WORKS!!!"
+
+    if not current_user.can(Permission.ADMIN):
+        labs = filter(lambda d: d['lab_id'] in current_user.list_of_labs_to_check(), labs)
     return render_template('labs.html', lab_count = len(labs), labs=labs)
 
 
@@ -74,6 +75,9 @@ def checked_labs():
 @login_required
 def report(id):
     lab_id, st_id = [int(i) for i in str(id).split('_')]
+    if not lab_id in current_user.list_of_labs_to_check():
+        return render_template('403.html')
+
     today_data = str(datetime.datetime.utcnow().__str__().split('.')[0])
 
     form = LabForm()
@@ -113,6 +117,9 @@ def edit_report(id):
         st_id = int(st_id)
     else:
         lab_id, st_id, _, __ = [int(i) for i in str(id).split('_')]
+
+    if not lab_id in current_user.list_of_labs_to_check():
+        return render_template('403.html')
 
     form = EditReportForm()
     student = get_student_name(current_app.config['DB'], st_id)
@@ -299,7 +306,7 @@ def register():
             flash('This username already exists!')
             return redirect(url_for('main.register', **request.args))
 
-        User.register(form.username.data, form.password.data)
+        User.register(form.username.data, form.password.data, form.email.data)
 
         #send_mail(current_app, 'nataliya.samoylenko@gmail.com', "Test")
 

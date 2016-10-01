@@ -36,7 +36,6 @@ class DevelopmentConfig(Config):
 
     USER_DB = Config.BASE_PATH + 'user_info_dev.sqlite3'
     DB = Config.BASE_PATH + 'grade_system_dev.sqlite'
-    ST_ID_RANGE = range(1,15)
 
 
 class TestingConfig(Config):
@@ -44,14 +43,13 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
             'sqlite:///' + os.path.join(Config.BASE_PATH, 'data-test.sqlite')
     DB = Config.BASE_PATH + 'grade_system_test.sqlite'
-    ST_ID_RANGE = range(1,15)
 
 
 class ProductionConfig(Config):
+    DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
                     'sqlite:///' + os.path.join(Config.BASE_PATH, 'user_info.sqlite3')
     DB = Config.BASE_PATH + 'grade_system.sqlite'
-    ST_ID_RANGE = range(1,33)
 
 
 config = {

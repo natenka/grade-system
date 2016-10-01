@@ -11,9 +11,10 @@ class Permission:
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(64), index=True, unique=True)
     username = db.Column(db.String(16), index=True, unique=True)
     password_hash = db.Column(db.String(128))
+    email = db.Column(db.String(64), index=True, unique=True)
+    labs_to_check = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
     def __init__(self, **kwargs):
@@ -36,8 +37,8 @@ class User(UserMixin, db.Model):
         self.role_id = role_id
 
     @staticmethod
-    def register(username, password):
-        user = User(username=username)
+    def register(username, password, email):
+        user = User(username=username, email=email)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
@@ -48,8 +49,12 @@ class User(UserMixin, db.Model):
     def is_administrator(self):
         return self.can(Permission.ADMIN)
 
+    def list_of_labs_to_check(self):
+        list_labs_to_check = [int(lab) for lab in str(self.labs_to_check).split(',')]
+        return list_labs_to_check
+
     def __repr__(self):
-        return 'User {0}'.format(self.username)
+        return '{0}'.format(self.username)
 
 
 class Role(db.Model):
@@ -65,7 +70,7 @@ class Role(db.Model):
         roles = {
             'User': (Permission.USER, True),
             'Administrator': (Permission.ADMIN, False)
-        }
+                }
         for r in roles:
             role = Role.query.filter_by(name=r).first()
             if role is None:
@@ -77,7 +82,7 @@ class Role(db.Model):
 
 
     def __repr__(self):
-        return 'Role {0}'.format(self.name)
+        return '{0}'.format(self.name)
 
 
 class AnonymousUser(AnonymousUserMixin):

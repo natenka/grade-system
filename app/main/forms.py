@@ -51,4 +51,5 @@ class SendMailToAllStudentsForm(Form):
 class RegisterUserForm(Form):
     username = StringField('Username', validators=[Required(), Length(1, 16)])
     password = PasswordField('Password', validators=[Required()])
+    email = StringField('Email', validators=[Required(), Length(1, 32)])
     register = SubmitField('Register')

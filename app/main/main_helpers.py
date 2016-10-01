@@ -67,6 +67,15 @@ def st_id_gdisk(db_name):
     return result
 
 
+def st_id_range(db_name):
+    query = "select st_id from students"
+    result = query_db(db_name, query)
+    result = [int(st[0]) for st in result]
+    return result
+
+ST_ID_RANGE = st_id_range
+
+
 def cfg_files_in_dir(dir_name):
     cfg_files = [
         f for f in os.listdir(dir_name) if f.endswith('txt') and (f.startswith('r') or f.startswith('sw'))]
@@ -211,16 +220,16 @@ def get_results_web(db_name, config, all_st=True):
     """
     """
     results = []
-    for st_id in config['ST_ID_RANGE']:
+    for st_id in ST_ID_RANGE(db_name):
         st_results = {}
         st_results['st_id'] = st_id
         st_results['student'] = get_student_name(db_name, st_id)
         query = """select lab_id from results
-                   where st_id = ? and (status = 'Sended(Done)' or status = 'Done') and lab_id != 1001;"""
+                   where st_id = ? and (status = 'Sended(Done)' or status = 'Done') and lab_id < 1001;"""
         st_results['total_labs'] = len(query_db(db_name, query, args=(st_id,)))
 
         query = """select mark from results
-                   where st_id = ? and (status = 'Sended(Done)' or status = 'Done') and lab_id != 1001;"""
+                   where st_id = ? and (status = 'Sended(Done)' or status = 'Done') and lab_id < 1001;"""
         all_marks = query_db(db_name, query, args=(st_id,))
         st_results['total_marks'] = sum([int(i[0]) for i in all_marks if i[0]])
 
@@ -268,7 +277,7 @@ def get_st_list_not_done_lab(db_name, config):
             st_done = [result[0]]
         else:
             st_done = [st[0] for st in result]
-        lab_dict[lab_id] = ', '.join([str(st) for st in config['ST_ID_RANGE'] if not st in st_done])
+        lab_dict[lab_id] = ', '.join([str(st) for st in ST_ID_RANGE(db_name) if not st in st_done])
 
     return lab_dict
 
@@ -407,7 +416,7 @@ def check_new_loaded_labs(db_name,config, verbose=True):
     output = []
     range_labs = range(1,max(LABS_TO_CHECK)+1)
 
-    for st_id in config['ST_ID_RANGE']:
+    for st_id in ST_ID_RANGE(db_name):
         for lab_id in range_labs:
             lab_status = get_lab_status(db_name,st_id,lab_id)
             if lab_status in lab_status_values:
@@ -484,7 +493,7 @@ def check_student_BIG_lab_files(db_name, st_id, lab_id, config):
 
 def check_new_loaded_BIG_labs(db_name, config, verbose=True):
     output = []
-    for st_id in config['ST_ID_RANGE']:
+    for st_id in ST_ID_RANGE(db_name):
         for lab_id in [1001, 1002]:
             #print st_id, lab_id
             lab_status = get_lab_status(db_name,st_id,lab_id)
