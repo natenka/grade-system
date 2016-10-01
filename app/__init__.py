@@ -13,6 +13,9 @@ bootstrap = Bootstrap()
 moment = Moment()
 db = SQLAlchemy()
 lm = LoginManager()
+#Keeps track of the client IP address and browser agent.
+#Will log the user out if it detects a change.
+lm.session_protectiom = 'strong'
 lm.login_view = 'main.login'
 migrate = Migrate()
 mail = Mail()

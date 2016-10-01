@@ -25,6 +25,8 @@ from .main_helpers import check_labs_and_generate_reports, set_lab_check_results
                           sync, configs_folder_id, students_folder_id, last_sync, set_last_sync,\
                           get_last_sync_time, st_id_gdisk, LAB_ID_RANGE, get_st_cfg_files,\
                           get_experts_stat, check_new_loaded_configs, send_mail
+from ..decorators import admin_required
+
 
 
 
@@ -39,6 +41,7 @@ def index():
 
 @main.route('/labs', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def labs():
     check_labs_and_generate_reports(current_app.config['DB'], current_app.config)
 
@@ -271,6 +274,7 @@ def login():
 @login_required
 def logout():
     logout_user()
+    flash('You have been logged out')
 
     return redirect(url_for('main.index'))
 
@@ -288,7 +292,7 @@ def register():
 
         User.register(form.username.data, form.password.data)
 
-        send_mail(current_app, 'nataliya.samoylenko@gmail.com', "Test")
+        #send_mail(current_app, 'nataliya.samoylenko@gmail.com', "Test")
 
         return redirect(url_for('main.index'))
     return render_template('register.html', form=form)
