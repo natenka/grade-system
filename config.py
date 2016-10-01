@@ -46,7 +46,6 @@ class TestingConfig(Config):
 
 
 class ProductionConfig(Config):
-    DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
                     'sqlite:///' + os.path.join(Config.BASE_PATH, 'user_info.sqlite3')
     DB = Config.BASE_PATH + 'grade_system.sqlite'
