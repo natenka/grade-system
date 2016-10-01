@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 
 
@@ -16,6 +17,12 @@ class Config:
     PATH_ANSWER_BIG_LAB = GD_PATH + '_labs_answer_expert_only/big_labs/'
     PATH_INITIAL_BIG_LAB = GD_PATH + '_initial_configs/big_labs/'
 
+    MAIL_SERVER = 'smtp.googlemail.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    MAIL_SENDER = 'CCIE за год <ccie@linkmeup.ru>'
 
     @staticmethod
     def init_app(app):

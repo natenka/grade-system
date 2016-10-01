@@ -5,6 +5,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager
 from flask.ext.moment import Moment
 from flask.ext.migrate import Migrate
+from flask.ext.mail import Mail
 
 from config import config
 
@@ -14,6 +15,7 @@ db = SQLAlchemy()
 lm = LoginManager()
 lm.login_view = 'main.login'
 migrate = Migrate()
+mail = Mail()
 
 
 def create_app(config_name):
@@ -32,6 +34,7 @@ def create_app(config_name):
     lm.init_app(app)
     moment.init_app(app)
     migrate.init_app(app, db)
+    mail.init_app(app)
 
     # import blueprints
     from .main import main as main_blueprint

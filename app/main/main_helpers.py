@@ -864,3 +864,30 @@ def get_last_sync_time(base_path):
         students_upd_time = datetime.datetime.strptime(file_content['students_upd_time'], '%Y-%m-%d %H:%M:%S.%f')
 
     return configs_upd_time, students_upd_time
+
+
+#################Flask mail
+from threading import Thread
+from flask import render_template
+from flask.ext.mail import Message
+from .. import mail
+
+
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+
+def send_mail(curr_app, to, subject, template='mail/report.txt', **kwargs):
+    app = curr_app._get_current_object()
+    sender = curr_app.config['MAIL_SENDER']
+    msg = Message('[Lab] test flask-mail', sender=sender, recipients=[to])
+    msg.body = render_template(template, comment="Отличная работа", mark=5)
+    #msg.body = render_template(template, **kwargs)
+    with app.open_resource("models.py") as f:
+        msg.attach("models.py", "text/plain", f.read())
+    print "Send mail to ", to
+    th = Thread(target=send_async_email, args=[app, msg])
+    th.start()
+    return th
+
