@@ -23,7 +23,7 @@ class User(UserMixin, db.Model):
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.role is None:
-            admins_username = ['nata']
+            admins_username = ['nata', 'Emil']
             if self.username in admins_username:
                 self.role = Role.query.filter_by(permissions=0x80).first()
             if self.role is None:
