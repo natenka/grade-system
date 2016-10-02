@@ -24,7 +24,7 @@ from .main_helpers import check_labs_and_generate_reports, set_lab_check_results
                           get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports,\
                           sync, configs_folder_id, students_folder_id, last_sync, set_last_sync,\
                           get_last_sync_time, st_id_gdisk, LAB_ID_RANGE, get_st_cfg_files,\
-                          get_experts_stat, check_new_loaded_configs, send_mail
+                          get_experts_stat, check_new_loaded_configs, send_mail, get_checkers_labs
 from ..decorators import admin_required
 
 
@@ -44,12 +44,15 @@ def index():
 def labs():
     check_labs_and_generate_reports(current_app.config['DB'], current_app.config)
 
+    checkers_labs = User.query.with_entities(User.st_id, User.labs_to_check).all()
+    all_checkers_labs = get_checkers_labs(current_app.config['DB'], checkers_labs)
+
     labs = get_all_loaded_labs(current_app.config['DB'])
     print current_user
 
     if not current_user.can(Permission.ADMIN):
         labs = filter(lambda d: d['lab_id'] in current_user.list_of_labs_to_check(), labs)
-    return render_template('labs.html', lab_count = len(labs), labs=labs)
+    return render_template('labs.html', lab_count = len(labs), labs=labs, all_checkers_labs=all_checkers_labs)
 
 
 @main.route('/checked_labs', methods=['GET', 'POST'])

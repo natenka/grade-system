@@ -5,11 +5,34 @@
     <h1>Не проверено лабораторных работ: {{lab_count}}</h1>
     <br>
     <br>
+    {% if current_user.can(Permission.ADMIN) %}
+        {% if all_checkers_labs %}
+        <h2>Checkers Labs</h2>
+            <table class="table table-hover">
+                <tr>
+                    <th>Lab</th>
+                    <th>Student</th>
+                    <th>Статус</th>
+                    <th>Отчет</th>
+                </tr>
+                {% for lab in all_checkers_labs %}
+                <tr>
+                    <td>{{lab['lab_id']}}</td>
+                    <td>{{lab['st_name']}}</td>
+                    <td>{{lab['status']}}</td>
+                    <td><a href="report/{{lab['lab_id']}}_{{lab['st_id']}}">Перейти к отчету</a></td>
+                </tr>
+                {% endfor %}
+            </table>
+            <br>
+            <br>
+        <h2>All Labs</h2>
+        {% endif %}
+    {% endif %}
         <table class="table table-hover">
             <tr>
                 <th>Lab</th>
                 <th>Student</th>
-                <th>Diff</th>
                 <th>Статус</th>
                 <th>Отчет</th>
             </tr>
@@ -17,7 +40,6 @@
             <tr>
                 <td>{{lab['lab_id']}}</td>
                 <td>{{lab['st_name']}}</td>
-                <td>{{lab['diff']}}%</td>
                 <td>{{lab['status']}}</td>
                 <td><a href="report/{{lab['lab_id']}}_{{lab['st_id']}}">Перейти к отчету</a></td>
             </tr>

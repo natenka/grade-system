@@ -85,6 +85,31 @@ def cfg_files_in_dir(dir_name):
 
 ### Get functions
 
+def get_checkers_labs(db_name, checkers_labs_tuple):
+    with sqlite3.connect(db_name) as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        query = """
+                select lab_id, results.st_id, st_name, status, diff, live
+                from results,students
+                where students.st_id = results.st_id and status='ReportGenerated'
+                and results.st_id = ? and results.lab_id = ?;
+                """
+        keys = ['lab_id','st_id','st_name','status','diff','live']
+        result = []
+        for st_id, labs_to_check in checkers_labs_tuple:
+            if st_id:
+                for lab_id in [int(i) for i in str(labs_to_check).split(',')]:
+                    cursor.execute(query, (st_id, lab_id))
+                    for row in cursor.fetchall():
+                        di = {}
+                        for k in keys:
+                            di[k] = row[k]
+                        result.append(di)
+        if not result:
+            return None
+        return result
+
 
 def get_experts_stat(db_name, current_expert):
     query = "select expert from results"
