@@ -51,7 +51,8 @@ def labs():
     print current_user
 
     if not current_user.can(Permission.ADMIN):
-        labs = filter(lambda d: d['lab_id'] in current_user.list_of_labs_to_check(), labs)
+        if not lab_id in current_user.list_of_labs_to_check():
+            return render_template('403.html')
     return render_template('labs.html', lab_count = len(labs), labs=labs, all_checkers_labs=all_checkers_labs)
 
 
@@ -78,8 +79,9 @@ def checked_labs():
 @login_required
 def report(id):
     lab_id, st_id = [int(i) for i in str(id).split('_')]
-    if not lab_id in current_user.list_of_labs_to_check():
-        return render_template('403.html')
+    if not current_user.can(Permission.ADMIN):
+        if not lab_id in current_user.list_of_labs_to_check():
+            return render_template('403.html')
 
     today_data = str(datetime.datetime.utcnow().__str__().split('.')[0])
 
@@ -121,8 +123,9 @@ def edit_report(id):
     else:
         lab_id, st_id, _, __ = [int(i) for i in str(id).split('_')]
 
-    if not lab_id in current_user.list_of_labs_to_check():
-        return render_template('403.html')
+    if not current_user.can(Permission.ADMIN):
+        if not lab_id in current_user.list_of_labs_to_check():
+            return render_template('403.html')
 
     form = EditReportForm()
     student = get_student_name(current_app.config['DB'], st_id)
@@ -153,8 +156,9 @@ def lab_info():
 @login_required
 def lab_initial(lab_id):
 
-    if not lab_id in current_user.list_of_labs_to_check():
-        return render_template('403.html')
+    if not current_user.can(Permission.ADMIN):
+        if not lab_id in current_user.list_of_labs_to_check():
+            return render_template('403.html')
 
     files = return_cfg_files(current_app.config['DB'],lab_id, 'initial', current_app.config)
     return render_template('lab_initial.html', lab=lab_id, files=files, cfg_name="initial")
@@ -163,8 +167,9 @@ def lab_initial(lab_id):
 @main.route('/lab_answer/<lab_id>', methods=['GET', 'POST'])
 @login_required
 def lab_answer(lab_id):
-    if not lab_id in current_user.list_of_labs_to_check():
-        return render_template('403.html')
+    if not current_user.can(Permission.ADMIN):
+        if not lab_id in current_user.list_of_labs_to_check():
+            return render_template('403.html')
 
     files = return_cfg_files(current_app.config['DB'], lab_id, 'answer', current_app.config)
     return render_template('lab_answer.html', lab=lab_id, files=files, cfg_name="answer")
@@ -175,8 +180,9 @@ def lab_answer(lab_id):
 @login_required
 def config_report(lab_id):
 
-    if not lab_id in current_user.list_of_labs_to_check():
-        return render_template('403.html')
+    if not current_user.can(Permission.ADMIN):
+        if not lab_id in current_user.list_of_labs_to_check():
+            return render_template('403.html')
 
     diff_report = get_config_diff_report(current_app.config['DB'], lab_id, current_app.config)
     return render_template('config_report.html', lab=lab_id, diff=diff_report)
@@ -344,4 +350,4 @@ def forbidden(e):
 
 @main.app_errorhandler(500)
 def internal_server_error(e):
-    return render_template('403.html')
+    return render_template('500.html')

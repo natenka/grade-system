@@ -279,7 +279,7 @@ def get_lab_stats_web(db_name):
         lab_results['st_count'] = len(query_db(db_name, query, args=(lab_id,)))
 
         query = "select mark from results where lab_id = ?"
-        if lab_results['st_count'] == 0:
+        if lab_results['st_count'] == 0 or lab_results['st_count'] == 1:
             lab_results['avg_mark'] = 0
         else:
             marks = query_db(db_name, query, args=(lab_id,))
