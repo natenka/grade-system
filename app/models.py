@@ -53,7 +53,7 @@ class User(UserMixin, db.Model):
         return self.can(Permission.ADMIN)
 
     def list_of_labs_to_check(self):
-        list_labs_to_check = [int(lab) for lab in str(self.labs_allowed_to_check).split(',')]
+        list_labs_to_check = [int(lab) for lab in str(self.labs_allowed_to_check).split(',') if lab.isdigit()]
         return list_labs_to_check
 
     def __repr__(self):
