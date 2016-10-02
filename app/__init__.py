@@ -6,14 +6,8 @@ from flask.ext.login import LoginManager
 from flask.ext.moment import Moment
 from flask.ext.migrate import Migrate
 from flask.ext.mail import Mail
-from flask.ext.errormail import mail_on_500
 
 from config import config
-
-ADMINISTRATORS = (
-    "nataliya.samoylenko@gmail.com",
-)
-
 
 bootstrap = Bootstrap()
 moment = Moment()
@@ -44,7 +38,6 @@ def create_app(config_name):
     moment.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
-    mail_on_500(app, ADMINISTRATORS)
 
     # import blueprints
     from .main import main as main_blueprint
