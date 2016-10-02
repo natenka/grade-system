@@ -153,6 +153,9 @@ def lab_info():
 @login_required
 def lab_initial(lab_id):
 
+    if not lab_id in current_user.list_of_labs_to_check():
+        return render_template('403.html')
+
     files = return_cfg_files(current_app.config['DB'],lab_id, 'initial', current_app.config)
     return render_template('lab_initial.html', lab=lab_id, files=files, cfg_name="initial")
 
@@ -160,6 +163,8 @@ def lab_initial(lab_id):
 @main.route('/lab_answer/<lab_id>', methods=['GET', 'POST'])
 @login_required
 def lab_answer(lab_id):
+    if not lab_id in current_user.list_of_labs_to_check():
+        return render_template('403.html')
 
     files = return_cfg_files(current_app.config['DB'], lab_id, 'answer', current_app.config)
     return render_template('lab_answer.html', lab=lab_id, files=files, cfg_name="answer")
@@ -169,6 +174,9 @@ def lab_answer(lab_id):
 @main.route('/config_report/<lab_id>', methods=['GET', 'POST'])
 @login_required
 def config_report(lab_id):
+
+    if not lab_id in current_user.list_of_labs_to_check():
+        return render_template('403.html')
 
     diff_report = get_config_diff_report(current_app.config['DB'], lab_id, current_app.config)
     return render_template('config_report.html', lab=lab_id, diff=diff_report)
