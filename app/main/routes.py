@@ -346,6 +346,8 @@ def register():
 @main.route('/help')
 @login_required
 def help():
+    if not current_user.can(Permission.ADMIN):
+        return render_template('help_checkers.html')
 
     return render_template('help.html')
 
