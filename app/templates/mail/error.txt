@@ -1,0 +1,6 @@
+
+Error occured at: {{time}} UTC
+
+
+{{error_text}}
+

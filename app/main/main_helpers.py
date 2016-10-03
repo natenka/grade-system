@@ -14,13 +14,12 @@ from collections import OrderedDict as odict
 from natsort import natsorted
 
 
-import getpass
-import smtplib
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEBase import MIMEBase
-from email.MIMEText import MIMEText
-from email import Encoders
-from .helpers.gmail_creds import gmail_user, gmail_pwd
+#################Flask mail
+from threading import Thread
+from flask import render_template
+from flask.ext.mail import Message
+from .. import mail
+
 
 
 today_data = datetime.date.today().__str__()
@@ -750,90 +749,6 @@ def return_report_content(db_name, st_id, lab_id, task, config):
     return report_fname, report
 
 
-#Send mail func
-# Adapted from http://kutuma.blogspot.com/2007/08/sending-emails-via-gmail-with-python.html
-
-gmail_user = gmail_user
-gmail_pwd = gmail_pwd
-
-def login(user):
-    global gmail_user, gmail_pwd
-    gmail_user = user
-    gmail_pwd = getpass.getpass('Password for %s: ' % gmail_user)
-
-def mail(to, subject, text, attach=None):
-    msg = MIMEMultipart()
-    msg['From'] = gmail_user
-    msg['To'] = to
-    msg['Subject'] = subject
-    msg.attach(MIMEText(text))
-    if attach:
-        for f_attach in attach:
-            part = MIMEBase('application', 'octet-stream')
-            part.set_payload(open(f_attach, 'rb').read())
-            Encoders.encode_base64(part)
-            part.add_header('Content-Disposition', 'attachment; filename="%s"' % os.path.basename(f_attach))
-            msg.attach(part)
-    mailServer = smtplib.SMTP("smtp.gmail.com", 587)
-    mailServer.ehlo()
-    mailServer.starttls()
-    mailServer.ehlo()
-    mailServer.login(gmail_user, gmail_pwd)
-    mailServer.sendmail(gmail_user, to, msg.as_string())
-    mailServer.close()
-
-
-def send_mail_to_all_students(db_name, header, message):
-    all_emails = query_db(db_name, "select st_email from students")
-
-    for e in all_emails:
-        email = e[0]
-        if len(email) > 3:
-            mail(email, header, message)
-        print email
-
-def send_mail_with_reports(db_name, config):
-    done_labs = get_info_for_lab_status(db_name, 'Done', all_labs=True)
-    STUDENT_ID_FOLDER = st_id_gdisk(db_name)
-    REPORT_PATH = config['REPORT_PATH']
-
-    for d in done_labs:
-        st_id = d['st_id']
-        lab_id = d['lab_id']
-        if int(lab_id) > 1000:
-            lab_name = 'lab%03d' % (int(lab_id) - 1000)
-            st_gdisk_folder = STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'
-            st_REPORT_PATH = REPORT_PATH+ st_gdisk_folder +lab_name+'/'
-            files_to_attach = []
-            fname = st_REPORT_PATH+'report_for_big_%s.txt' % lab_name
-            files_to_attach.append(fname)
-
-            text_header = "[Lab] Big Lab %d is Done. Good Job!" % (int(lab_id) - 1000)
-        else:
-            lab_name = 'lab%03d' % int(lab_id)
-            task_n = get_task_number(db_name,lab_id)
-            st_gdisk_folder = STUDENT_ID_FOLDER[st_id]+'/'+'labs/'
-            st_REPORT_PATH = REPORT_PATH+ st_gdisk_folder +lab_name+'/'
-
-            files_to_attach = []
-            for n in range(1,task_n+1):
-                task = 'task' + str(n)
-                fname = st_REPORT_PATH+'report_for_%s_%s.txt' % (lab_name, task)
-                files_to_attach.append(fname)
-
-            text_header = "[Lab] Lab %s is Done. Good Job!" % lab_id
-
-        print STUDENT_ID_FOLDER[st_id], lab_name
-        comment, email, mark = get_comment_email_mark_from_db(db_name, st_id, lab_id)
-        if not comment:
-            comment = ''
-        mark_text = u"\n\nБаллы за лабораторную: " + str(mark)
-
-        text = comment + mark_text
-        text = text.encode('utf-8')
-
-        mail(email, text_header, text, files_to_attach)
-        set_lab_status(db_name, st_id, lab_id, "Sended(Done)")
 
 
 ###### SYNC Google Drive
@@ -900,28 +815,78 @@ def get_last_sync_time(base_path):
     return configs_upd_time, students_upd_time
 
 
-#################Flask mail
-from threading import Thread
-from flask import render_template
-from flask.ext.mail import Message
-from .. import mail
-
+### Flask-Mail async sending mails
 
 def send_async_email(app, msg):
     with app.app_context():
         mail.send(msg)
 
 
-def send_mail(curr_app, to, subject, template='mail/report.txt', **kwargs):
+def send_mail(curr_app, to_email, subject, template='general', files_to_attach=[], **kwargs):
     app = curr_app._get_current_object()
     sender = curr_app.config['MAIL_SENDER']
-    msg = Message('[Lab] test flask-mail', sender=sender, recipients=[to])
-    msg.body = render_template(template, comment="Отличная работа", mark=5)
-    #msg.body = render_template(template, **kwargs)
-    with app.open_resource("models.py") as f:
-        msg.attach("models.py", "text/plain", f.read())
-    print "Send mail to ", to
+    if template == 'report':
+        template = 'mail/report.txt'
+    elif template == 'error':
+        subject = '[Error] ' + subject
+        template = 'mail/error.txt'
+    else:
+        template = 'mail/general.txt'
+
+    msg = Message(subject, sender=sender, recipients=[to_email])
+    msg.body = render_template(template, **kwargs)
+
+    for att_file in files_to_attach:
+        with app.open_resource(att_file) as f:
+            msg.attach("report.files", "text/plain", f.read())
+
+    print "Send mail ", subject, " to ", to_email
     th = Thread(target=send_async_email, args=[app, msg])
     th.start()
     return th
 
+
+### Send mail functions
+def send_mail_to_all_students(db_name, mail_subject, message):
+    all_emails = query_db(db_name, "select st_email from students")
+
+    for e in all_emails:
+        email = e[0]
+        if len(email) > 3:
+            send_mail(current_app, email, mail_subject, mail_body=message)
+
+def send_mail_with_reports(db_name, curr_app):
+    done_labs = get_info_for_lab_status(db_name, 'Done', all_labs=True)
+    STUDENT_ID_FOLDER = st_id_gdisk(db_name)
+    REPORT_PATH = curr_app.config['REPORT_PATH']
+
+    for d in done_labs:
+        st_id = d['st_id']
+        lab_id = d['lab_id']
+        if int(lab_id) > 1000:
+            lab_name = 'lab%03d' % (int(lab_id) - 1000)
+            st_gdisk_folder = STUDENT_ID_FOLDER[st_id]+'/'+'big_labs/'
+            st_REPORT_PATH = REPORT_PATH+ st_gdisk_folder +lab_name+'/'
+            files_to_attach = []
+            fname = st_REPORT_PATH+'report_for_big_%s.txt' % lab_name
+            files_to_attach.append(fname)
+
+            mail_subject = "[Lab] Big Lab %d is Done. Good Job!" % (int(lab_id) - 1000)
+        else:
+            lab_name = 'lab%03d' % int(lab_id)
+            task_n = get_task_number(db_name,lab_id)
+            st_gdisk_folder = STUDENT_ID_FOLDER[st_id]+'/'+'labs/'
+            st_REPORT_PATH = REPORT_PATH+ st_gdisk_folder +lab_name+'/'
+
+            files_to_attach = []
+            for n in range(1,task_n+1):
+                task = 'task' + str(n)
+                fname = st_REPORT_PATH+'report_for_%s_%s.txt' % (lab_name, task)
+                files_to_attach.append(fname)
+
+            mail_subject = "[Lab] Lab %s is Done. Good Job!" % lab_id
+
+        comment, email, mark = get_comment_email_mark_from_db(db_name, st_id, lab_id)
+
+        send_mail(curr_app, email, mail_subject, 'report', files_to_attach, mark=mark, comment=comment)
+        set_lab_status(db_name, st_id, lab_id, "Sended(Done)")

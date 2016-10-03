@@ -271,7 +271,7 @@ def manage():
             return redirect(url_for('main.manage'))
 
     if 'confirm' in request.form.keys() and 'send' in request.form.keys():
-        send_mail_with_reports(current_app.config['DB'], current_app.config)
+        send_mail_with_reports(current_app.config['DB'], current_app)
         return redirect(url_for('main.manage'))
 
     #if 'confirm' in request.form.keys() and 'all_send' in request.form.keys():
@@ -311,6 +311,7 @@ def logout():
     return redirect(url_for('main.index'))
 
 
+"""
 @main.route('/register', methods=['GET', 'POST'])
 @admin_required
 def register():
@@ -325,11 +326,9 @@ def register():
 
         User.register(form.username.data, form.password.data, form.email.data)
 
-        #send_mail(current_app, 'nataliya.samoylenko@gmail.com', "Test")
-
         return redirect(url_for('main.index'))
     return render_template('register.html', form=form)
-
+"""
 
 @main.route('/help')
 @login_required
@@ -350,4 +349,6 @@ def forbidden(e):
 
 @main.app_errorhandler(500)
 def internal_server_error(e):
+    today_data = str(datetime.datetime.utcnow().__str__().split('.')[0])
+    send_mail(current_app, "nataliya.samoylenko@gmail.com","Error occured in grade-system",'error', time=today_data, error_text=e)
     return render_template('500.html')
