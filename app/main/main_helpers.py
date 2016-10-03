@@ -13,12 +13,10 @@ import subprocess
 from collections import OrderedDict as odict
 from natsort import natsorted
 
-
-#################Flask mail
-from threading import Thread
 from flask import render_template
 from flask.ext.mail import Message
 from .. import mail
+from ..decorators import async
 
 
 
@@ -453,7 +451,7 @@ def check_new_loaded_labs(db_name,config, verbose=True):
                     output.append("Set status to 'Loaded' for lab %d student %d" % (lab_id, st_id))
     return output
 
-
+@async
 def generate_report_for_loaded_labs(db_name, config, verbose=True):
     """
     """
@@ -620,7 +618,7 @@ def check_lab_config_files(db_name, lab_id, config):
             return False
     return all_config_files_loaded
 
-
+@async
 def check_new_loaded_configs(db_name, config):
     """
     """
@@ -817,6 +815,7 @@ def get_last_sync_time(base_path):
 
 ### Flask-Mail async sending mails
 
+@async
 def send_async_email(app, msg):
     with app.app_context():
         mail.send(msg)
@@ -841,9 +840,7 @@ def send_mail(curr_app, to_email, subject, template='general', files_to_attach=[
             msg.attach(os.path.basename(att_file), "text/plain", f.read())
 
     print "Send mail ", subject, " to ", to_email
-    th = Thread(target=send_async_email, args=[app, msg])
-    th.start()
-    return th
+    send_async_email(app, msg)
 
 
 ### Send mail functions

@@ -1,3 +1,4 @@
+from threading import Thread
 from functools import wraps
 from flask import abort
 from flask_login import current_user
@@ -17,3 +18,10 @@ def permission_required(permission):
 
 def admin_required(f):
     return permission_required(Permission.ADMIN)(f)
+
+
+def async(f):
+    def wrapper(*args, **kwargs):
+        thr = Thread(target=f, args=args, kwargs=kwargs)
+        thr.start()
+    return wrapper
