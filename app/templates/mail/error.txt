@@ -4,3 +4,6 @@ Error occured at: {{time}} UTC
 
 {{error_text}}
 
+
+Additional info:
+{{error_info}}

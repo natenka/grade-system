@@ -11,6 +11,7 @@ from operator import itemgetter
 from flask import render_template, redirect, url_for, request, flash
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from flask import current_app
+import traceback
 
 from . import main
 from ..models import User, Permission
@@ -350,5 +351,12 @@ def forbidden(e):
 @main.app_errorhandler(500)
 def internal_server_error(e):
     today_data = str(datetime.datetime.utcnow().__str__().split('.')[0])
-    send_mail(current_app, "nataliya.samoylenko@gmail.com","Error occured in grade-system",'error', time=today_data, error_text=e)
+    error_info = """
+    URL: %s
+    Request Method: %s
+    User: %s
+    Traceback: \n%s
+    """ % (request.path, request.method, current_user, traceback.format_exc())
+
+    send_mail(current_app, "nataliya.samoylenko@gmail.com","Error occured in grade-system",'error', time=today_data, error_text=e, error_info=error_info)
     return render_template('500.html')
