@@ -838,7 +838,7 @@ def send_mail(curr_app, to_email, subject, template='general', files_to_attach=[
 
     for att_file in files_to_attach:
         with app.open_resource(att_file) as f:
-            msg.attach("report.files", "text/plain", f.read())
+            msg.attach(os.path.basename(att_file), "text/plain", f.read())
 
     print "Send mail ", subject, " to ", to_email
     th = Thread(target=send_async_email, args=[app, msg])
