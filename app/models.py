@@ -56,6 +56,12 @@ class User(UserMixin, db.Model):
         list_labs_to_check = [int(lab) for lab in str(self.labs_allowed_to_check).split(',') if lab.isdigit()]
         return list_labs_to_check
 
+
+    def get_all_checkers_labs(self):
+        checkers_labs = User.query.with_entities(User.st_id, User.labs_to_check).all()
+        checkers_labs_dict = { st_id: [int(i) for i in str(labs_to_check).split(',')] for st_id, labs_to_check in checkers_labs if st_id }
+        return checkers_labs_dict
+
     def __repr__(self):
         return '{0}'.format(self.username)
 

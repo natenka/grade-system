@@ -52,8 +52,8 @@ def labs():
     print current_user
 
     if not current_user.can(Permission.ADMIN):
-        if not lab_id in current_user.list_of_labs_to_check():
-            return render_template('403.html')
+        labs = filter(lambda d: d['lab_id'] in current_user.list_of_labs_to_check(), labs)
+
     return render_template('labs.html', lab_count = len(labs), labs=labs, all_checkers_labs=all_checkers_labs)
 
 
@@ -100,6 +100,16 @@ def report(id):
 
         set_lab_check_results(DB, st_id, lab_id, 'Done', comment, request.form['mark'], current_user, today_data)
         print "LAB %d for Student %d %s DONE with mark %s" % (lab_id, st_id, student, str(request.form['mark']))
+
+        if current_user.can(Permission.ADMIN):
+            all_checkers_labs_dict = current_user.get_all_checkers_labs()
+            if st_id in all_checkers_labs_dict:
+                if lab_id in all_checkers_labs_dict[st_id]:
+                    user = User.query.filter_by(st_id=st_id).first()
+                    current_all_labs = user.list_of_labs_to_check()
+                    current_all_labs.append(lab_id)
+                    current_all_labs = [ str(i) for i in sorted(list(set(current_all_labs)))]
+                    user.labs_allowed_to_check = ','.join(current_all_labs)
 
         return redirect(url_for('main.labs'))
 

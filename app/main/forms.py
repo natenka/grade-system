@@ -13,7 +13,7 @@ class LoginForm(Form):
 
 class LabForm(Form):
     comment = TextAreaField('\nAdd comment (optional)')
-    mark = IntegerField('Enter lab mark', validators=[Required()])
+    mark = IntegerField('Enter lab mark')
     done = SubmitField('Done')
 
 

@@ -2,7 +2,11 @@
 {% import "bootstrap/wtf.html" as wtf %}
 
 {% block page_content %}
+    {% if lab_count > 0 %}
     <h1>Не проверено лабораторных работ: {{lab_count}}</h1>
+    {% else %}
+    <h1>Пока что нет лабораторных работ на проверку.</h1>
+    {% endif %}
     <br>
     <br>
     {% if current_user.can(Permission.ADMIN) %}
@@ -29,6 +33,7 @@
         <h2>All Labs</h2>
         {% endif %}
     {% endif %}
+    {% if lab_count > 0 %}
         <table class="table table-hover">
             <tr>
                 <th>Lab</th>
@@ -46,6 +51,7 @@
             {% endfor %}
         </table>
         <br>
+     {% endif %}
         <br>
 
 {% endblock %}
