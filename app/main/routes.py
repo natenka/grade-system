@@ -192,7 +192,7 @@ def lab_answer(lab_id):
 def config_report(lab_id):
 
     if not current_user.can(Permission.ADMIN):
-        if not lab_id in current_user.list_of_labs_to_check():
+        if not int(lab_id) in current_user.list_of_labs_to_check():
             return render_template('403.html')
 
     diff_report = get_config_diff_report(current_app.config['DB'], lab_id, current_app.config)
