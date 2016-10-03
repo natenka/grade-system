@@ -831,6 +831,8 @@ def send_mail(curr_app, to_email, subject, template='general', files_to_attach=[
     elif template == 'error':
         subject = '[Error] ' + subject
         template = 'mail/error.txt'
+    elif template == 'checkers':
+        template = 'mail/checkers.txt'
     else:
         template = 'mail/general.txt'
 

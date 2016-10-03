@@ -89,7 +89,7 @@ def report(id):
     form = LabForm()
     DB = current_app.config['DB']
     #Prefill comment and mark for checked lab
-    cur_comment, _, cur_mark = get_comment_email_mark_from_db(DB, st_id, lab_id)
+    cur_comment, st_email, cur_mark = get_comment_email_mark_from_db(DB, st_id, lab_id)
     form.comment.data = cur_comment
     form.mark.data = cur_mark
 
@@ -110,6 +110,8 @@ def report(id):
                     current_all_labs.append(lab_id)
                     current_all_labs = [ str(i) for i in sorted(list(set(current_all_labs)))]
                     user.labs_allowed_to_check = ','.join(current_all_labs)
+                    send_mail(current_app, st_email,"[Lab] Now you can check lab %d" % lab_id, template='checkers')
+                    send_mail_with_reports(current_app.config['DB'], current_app)
 
         return redirect(url_for('main.labs'))
 
