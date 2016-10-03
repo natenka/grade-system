@@ -622,7 +622,9 @@ def check_lab_config_files(db_name, lab_id, config):
 def check_new_loaded_configs(db_name, config):
     """
     """
-    for lab_id in xrange(1, 150):
+    lab_range_min = LABS_TO_CHECK[0] - 20
+    lab_range_max = LABS_TO_CHECK[-3] + 20 if LABS_TO_CHECK[-3] <= 150 else 150
+    for lab_id in xrange(lab_range_min, lab_range_max+1):
         i_status, a_status = get_lab_configs_status(db_name, lab_id)
 
         if check_lab_config_files(db_name, lab_id, config):
