@@ -629,7 +629,7 @@ def check_new_loaded_configs(db_name, config):
 
         if check_lab_config_files(db_name, lab_id, config):
             set_lab_configs_status(db_name, lab_id, initial='Loaded', answer='Loaded')
-            print "Set status to 'Loaded' for lab %d init and answer configs" % lab_id
+            #print "Set status to 'Loaded' for lab %d init and answer configs" % lab_id
 
 
 def return_cfg_files(db_name,lab_id,cfg,config):
