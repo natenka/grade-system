@@ -166,11 +166,11 @@ def get_st_cfg_files(db_name, st_id, lab_id, config):
 
 def get_all_labs_checked_by_expert(db_name, expert):
     query = """
-            select lab_id, results.st_id, st_name, mark, check_time
+            select lab_id, results.st_id, st_name, status, mark, check_time
             from results,students
             where students.st_id = results.st_id and expert=?;
             """
-    keys = ['lab_id','st_id','st_name','mark', 'check_time']
+    keys = ['lab_id', 'st_id', 'st_name', 'status', 'mark', 'check_time']
     result = query_db_ret_list_of_dict(db_name, query, keys, (expert,))
     result = sorted(result, key=lambda k: k['check_time'], reverse=True)
     for d in result:

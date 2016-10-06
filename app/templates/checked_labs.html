@@ -19,6 +19,7 @@
                 <th>Lab</th>
                 <th>Student_ID</th>
                 <th>Student name</th>
+                <th>Status</th>
                 <th>Баллы</th>
                 <th>Время проверки</th>
                 <th>Отчет</th>
@@ -28,6 +29,7 @@
                 <td>{{lab['lab_id']}}</td>
                 <td>{{lab['st_id']}}</td>
                 <td>{{lab['st_name']}}</td>
+                <td>{{lab['status']}}</td>
                 <td>{{lab['mark']}}</td>
                 <td>{{ moment(lab['check_time']).format('LLL') }}</td>
                 <td><a href="report/{{lab['lab_id']}}_{{lab['st_id']}}">Перейти к отчету</a></td>
