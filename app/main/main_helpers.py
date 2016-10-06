@@ -754,7 +754,7 @@ def return_report_content(db_name, st_id, lab_id, task, config):
 ###### SYNC Google Drive
 
 configs_folder_id = {
-'_labs_answer_expert_only': '0B3uwAH0p4u2Nam81UEUxNUlPRGc',
+'_answer_configs': '0B3uwAH0p4u2Nam81UEUxNUlPRGc',
 '_initial_configs': '0B3uwAH0p4u2NcDR5bmpHdmZDRjA'}
 
 students_folder_id = {'_students_answer': '0B3uwAH0p4u2NVDBta09JTVlwN00'}

@@ -11,10 +11,10 @@ class Config:
     REPORT_PATH = BASE_PATH + 'reports/'
 
     PATH_INITIAL = GD_PATH + '_initial_configs/labs/'
-    PATH_ANSWER = GD_PATH + '_labs_answer_expert_only/labs/'
+    PATH_ANSWER = GD_PATH + '_answer_configs/labs/'
     PATH_STUDENT = GD_PATH + '_students_answer/'
 
-    PATH_ANSWER_BIG_LAB = GD_PATH + '_labs_answer_expert_only/big_labs/'
+    PATH_ANSWER_BIG_LAB = GD_PATH + '_answer_configs/big_labs/'
     PATH_INITIAL_BIG_LAB = GD_PATH + '_initial_configs/big_labs/'
 
     MAIL_SERVER = 'smtp.googlemail.com'
