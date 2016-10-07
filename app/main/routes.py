@@ -27,8 +27,10 @@ from .main_helpers import check_labs_and_generate_reports, set_lab_check_results
                           get_last_sync_time, st_id_gdisk, LAB_ID_RANGE, get_st_cfg_files,\
                           get_experts_stat, check_new_loaded_configs, send_mail, get_checkers_labs
 from ..decorators import admin_required
+from .helpers.lab_check_schedule import CHECK_LABS
 
-
+today_data = datetime.date.today().__str__()
+MAX_LAB_ID_PUBL_ANS = min(CHECK_LABS[today_data]) - 1
 
 
 @main.route('/')
@@ -168,23 +170,24 @@ def lab_info():
 @main.route('/lab_initial/<lab_id>', methods=['GET', 'POST'])
 @login_required
 def lab_initial(lab_id):
+    files = return_cfg_files(current_app.config['DB'],lab_id, 'initial', current_app.config)
 
     if not current_user.can(Permission.ADMIN):
-        if not lab_id in current_user.list_of_labs_to_check():
+        if int(lab_id) > MAX_LAB_ID_PUBL_ANS and not int(lab_id) in current_user.list_of_labs_to_check():
             return render_template('403.html')
 
-    files = return_cfg_files(current_app.config['DB'],lab_id, 'initial', current_app.config)
     return render_template('lab_initial.html', lab=lab_id, files=files, cfg_name="initial")
 
 
 @main.route('/lab_answer/<lab_id>', methods=['GET', 'POST'])
 @login_required
 def lab_answer(lab_id):
+    files = return_cfg_files(current_app.config['DB'], lab_id, 'answer', current_app.config)
+
     if not current_user.can(Permission.ADMIN):
-        if not lab_id in current_user.list_of_labs_to_check():
+        if int(lab_id) > MAX_LAB_ID_PUBL_ANS and not int(lab_id) in current_user.list_of_labs_to_check():
             return render_template('403.html')
 
-    files = return_cfg_files(current_app.config['DB'], lab_id, 'answer', current_app.config)
     return render_template('lab_answer.html', lab=lab_id, files=files, cfg_name="answer")
 
 
@@ -192,12 +195,12 @@ def lab_answer(lab_id):
 @main.route('/config_report/<lab_id>', methods=['GET', 'POST'])
 @login_required
 def config_report(lab_id):
+    diff_report = get_config_diff_report(current_app.config['DB'], lab_id, current_app.config)
 
     if not current_user.can(Permission.ADMIN):
-        if not int(lab_id) in current_user.list_of_labs_to_check():
+        if int(lab_id) > MAX_LAB_ID_PUBL_ANS and not int(lab_id) in current_user.list_of_labs_to_check():
             return render_template('403.html')
 
-    diff_report = get_config_diff_report(current_app.config['DB'], lab_id, current_app.config)
     return render_template('config_report.html', lab=lab_id, diff=diff_report)
 
 
