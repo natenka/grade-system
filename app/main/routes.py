@@ -30,7 +30,12 @@ from ..decorators import admin_required
 from .helpers.lab_check_schedule import CHECK_LABS
 
 today_data = datetime.date.today().__str__()
-MAX_LAB_ID_PUBL_ANS = min(CHECK_LABS[today_data]) - 1
+
+if not CHECK_LABS[today_data]:
+    today_data = (datetime.date.today() - datetime.timedelta(days=2)).__str__()
+    MAX_LAB_ID_PUBL_ANS = min(CHECK_LABS[today_data]) - 1
+else:
+    MAX_LAB_ID_PUBL_ANS = min(CHECK_LABS[today_data]) - 1
 
 
 @main.route('/')
