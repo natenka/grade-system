@@ -4,6 +4,7 @@
 from .helpers.diff_report import generateLabReport
 from .helpers.lab_check_schedule import CHECK_LABS
 
+import time
 import datetime
 import sqlite3
 import os
@@ -27,7 +28,7 @@ if not LABS_TO_CHECK:
 
 
 LAB_ID_RANGE = range(1,max(LABS_TO_CHECK)+1) + [1001, 1002]
-absent_labs = [3,10,20]
+absent_labs = [3, 10, 20, 72, 83, 89]
 for lab in absent_labs:
     LAB_ID_RANGE.remove(lab)
 
@@ -848,13 +849,16 @@ def send_mail(curr_app, to_email, subject, template='general', files_to_attach=[
 
 
 ### Send mail functions
-def send_mail_to_all_students(db_name, mail_subject, message):
+def send_mail_to_all_students(db_name, current_app, mail_subject, message):
     all_emails = query_db(db_name, "select st_email from students")
-
-    for e in all_emails:
+    #send_mail(current_app, 'nataliya.samoylenko@gmail.com', mail_subject, mail_body=message)
+    for i, e in enumerate(all_emails):
         email = e[0]
         if len(email) > 3:
             send_mail(current_app, email, mail_subject, mail_body=message)
+            if i in [9, 18, 25]:
+                time.sleep(10)
+
 
 def send_mail_with_reports(db_name, curr_app):
     done_labs = get_info_for_lab_status(db_name, 'Done', all_labs=True)

@@ -25,7 +25,7 @@ from .main_helpers import check_labs_and_generate_reports, set_lab_check_results
                           get_all_labs_checked_by_expert, get_config_diff_report, send_mail_with_reports,\
                           sync, configs_folder_id, students_folder_id, last_sync, set_last_sync,\
                           get_last_sync_time, st_id_gdisk, LAB_ID_RANGE, get_st_cfg_files,\
-                          get_experts_stat, check_new_loaded_configs, send_mail, get_checkers_labs
+                          get_experts_stat, check_new_loaded_configs, send_mail, get_checkers_labs, send_mail_to_all_students
 from ..decorators import admin_required
 from .helpers.lab_check_schedule import CHECK_LABS
 
@@ -295,10 +295,11 @@ def manage():
         send_mail_with_reports(current_app.config['DB'], current_app)
         return redirect(url_for('main.manage'))
 
-    #if 'confirm' in request.form.keys() and 'all_send' in request.form.keys():
-    #    header = send_mail_to_all_form.header.data
-    #    message = send_mail_to_all_form.message.data
-    #    send_mail_to_all_students(current_app.config['DB'], header, message)
+    if 'all_confirm' in request.form.keys() and 'all_send' in request.form.keys():
+        header = send_mail_to_all_form.header.data
+        message = send_mail_to_all_form.message.data
+        send_mail_to_all_students(current_app.config['DB'], current_app, header, message)
+        return redirect(url_for('main.manage'))
 
     configs_upd_time, students_upd_time = get_last_sync_time(current_app.config['BASE_PATH'])
 
